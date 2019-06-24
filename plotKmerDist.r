@@ -1,5 +1,13 @@
 #!/usr/bin/env Rscript
 
+#read in files from the terminal, full paths seperates by space
+args = commandArgs(trailingOnly=TRUE)
+
+# test that both arguements are present
+if (length(args)!=2) {
+  stop("Please provide full paths to both kmer frequency files (seperated by a space)", call.=FALSE)
+} 
+
 # turn off warnings for quiet output
 options(warn=-1)
 
@@ -7,12 +15,12 @@ options(warn=-1)
 library("ggplot2")
 
 #read in the files
-out_plate1="/media/data_disk/PROJECTS/Saad/CommonBlue/cleanData/plate1"
-out_plate2="/media/data_disk/PROJECTS/Saad/CommonBlue/cleanData/plate2"
+plate1_kmers=args[1]
+plate2_kmers=args[2]
 
-#read data
-plate1_kmers = read.table(paste0(out_plate1, "/kmer_dist_plate1"),header=T)
-plate2_kmers = read.table(paste0(out_plate2, "/kmer_dist_plate2"),header=T)
+#read data with hardcodes paths, not used at the moment
+#plate1_kmers = read.table(paste0(out_plate1, "/kmer_dist_plate1"),header=T)
+#plate2_kmers = read.table(paste0(out_plate2, "/kmer_dist_plate2"),header=T)
 
 #combine the df's
 plate1_kmers$group <- "plate1"
