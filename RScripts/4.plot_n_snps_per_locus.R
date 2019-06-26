@@ -1,11 +1,8 @@
 #!/usr/bin/env Rscript
 
 d = read.delim('./n_snps_per_locus.tsv')
-pdf('./n_snps_per_locus.pdf')
-# Keep only M==n, and loop through values of m:3-6
-mvalues=c(3,4,5,6)
-for (mval in mvalues)  {
-d = subset(d, M==n & m==mval)
+# Keep only M==n, and loop through values of m:3
+d = subset(d, M==n & m==3)
 # Make sure the table is ordered by number of snps.
 d = d[order(d$n_snps),]
 
@@ -24,6 +21,7 @@ m = m[,1:(max_n_snps+2)]
 m = m / rowSums(m, na.rm=T)
 
 # Draw the barplot.
+pdf('./n_snps_per_locus.pdf')
 
 col = rev(heat.colors(length(Mn_values)))
 
@@ -35,7 +33,5 @@ barplot(m,
 	main='Distributions of the number of SNPs per locus\nfor a range of M==n values'
 	)
 legend('topright', legend=c('M==n', Mn_values), fill=c(NA, col))
-mtext(paste0("m value: ", mval), side=3)
-}
-#close the m loop
+
 null=dev.off()

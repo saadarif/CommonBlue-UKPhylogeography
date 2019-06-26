@@ -2,12 +2,9 @@
 
 
 snps_per_loc = read.delim('./n_snps_per_locus.tsv')
-pdf('./n_loci_Mn.pdf')
 
-# Keep only M==n, and loop through values of m:3-6
-mvalues=c(3,4,5,6)
-for (mval in mvalues)  {
-snps_per_loc = subset(snps_per_loc, M==n & m==mval)
+# Keep only M==n, and loop through values of m=3
+snps_per_loc = subset(snps_per_loc, M==n & m==3)
 # Rename column 1
 colnames(snps_per_loc)[1] = 'par_set'
 
@@ -27,6 +24,7 @@ for(p in rownames(d)) {
 # Make sure the table is ordered
 d = d[order(d$M),]
 
+pdf('./n_loci_Mn.pdf')
 # Number of loci
 # ==========
 
@@ -51,8 +49,4 @@ points(d$M, d$n_loci, cex=0.5)
 lines(d$M, d$n_loci_poly, lty='dashed')
 points(d$M, d$n_loci_poly, cex=0.5)
 
-#add m value to title
-title(paste0("m value: ", mval))
-}
-#close of for loop over m values array
 null=dev.off()
