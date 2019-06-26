@@ -1,19 +1,19 @@
 #!/usr/bin/env nextflow
 
 files = Channel.fromPath( "/media/data_disk/PROJECTS/Saad/CommonBlue/cleanData/*/kmer_*" )
-params.outdir = "/media/data_dist/PROJECTS/Saad/CommonBlue/scripts"
+params.outdir = "/media/data_disk/PROJECTS/Saad/CommonBlue/scripts"
+
 process wordcount {
-    publishDir params.outdir, saveAs:{ filename -> "foo_$filename" }
+   publishDir params.outdir, mode: 'copy', pattern: '*.txt'
     input:
     file x from files
 
     output:
-    file '*.txt'
+    file '*file.txt' 
 
     """
-    < wc -l $x 
+     wc -l $x > ${x}_file.txt 
     """
 }
 
-result.println { it.trim() }
 
