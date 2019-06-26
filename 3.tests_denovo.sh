@@ -27,8 +27,6 @@ for M in $M_values ;do
 	log_file=$out_dir/denovo_map.oe
 	denovo_map.pl -T 6  --samples $reads_dir --popmap $popmap -o $out_dir  -M $M -n $n  &> $log_file
 	#end of M/N values loop
-	done
-#end of m values loop
 done
 
 # STEP 15-A-v: Check that all runs have completed.
@@ -47,7 +45,7 @@ for M in $M_values ;do
 	mkdir -p $out_dir
 	log_file=$out_dir/populations.oe
 	populations -P $stacks_dir -O $out_dir -r 0.80 &> $log_file
-	done
+done
 
 # STEP 15-A-viii: Compare the results obtained with different parameters
 mkdir -p results
