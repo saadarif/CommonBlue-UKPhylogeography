@@ -27,5 +27,3 @@ Rscript ../scripts/RScripts/2.plot_n_reads_per_sample.R
 
 #The following samples were removed for having reads <500,00
 #RNL_m_225, RNL_m_232, OBN_m114
-#The folloing samples were removed for having reads >6,000,000
-#BER_m_028, BER_m_029, DGC_M_100, MMS_m_208
