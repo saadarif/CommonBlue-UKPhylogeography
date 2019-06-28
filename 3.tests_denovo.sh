@@ -71,6 +71,6 @@ done
 
 # Plot the results with R.
 echo "Plotting the number of loci..."
-Rscript $top/scripts/RScripts/4.plot_n_loci.R
+Rscript $top/scripts/RScripts/4.plot_n_loci.R $m
 echo "Plotting the distribution of the number of SNPs..."
-Rscript $top/scripts/RScripts/4.plot_n_snps_per_locus.R
+Rscript $top/scripts/RScripts/4.plot_n_snps_per_locus.R $m

@@ -3,8 +3,12 @@
 
 snps_per_loc = read.delim('./n_snps_per_locus.tsv')
 
+#read in m value from terminal
+args = commandArgs(trailingOnly=TRUE)
+m_val <- as.integer(args)
+
 # Keep only M==n, and loop through values of m=3
-snps_per_loc = subset(snps_per_loc, M==n & m==3)
+snps_per_loc = subset(snps_per_loc, M==n & m==m_val)
 # Rename column 1
 colnames(snps_per_loc)[1] = 'par_set'
 

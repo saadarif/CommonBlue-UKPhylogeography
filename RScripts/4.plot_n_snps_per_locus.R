@@ -2,7 +2,11 @@
 
 d = read.delim('./n_snps_per_locus.tsv')
 # Keep only M==n, and loop through values of m:3
-d = subset(d, M==n & m==3)
+#read in m value from terminal
+args = commandArgs(trailingOnly=TRUE)
+m_val <- as.integer(args)
+
+d = subset(d, M==n & m==m_val)
 # Make sure the table is ordered by number of snps.
 d = d[order(d$n_snps),]
 
