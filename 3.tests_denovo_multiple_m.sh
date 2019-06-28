@@ -8,7 +8,7 @@ top=$(readlink -f $(dirname $0)/..)
 m_values="4 5 6"
 #make subdirectories for different values of m
 for m in $m_values; do
-	mdkir -p stacks.m$m
+	mkdir -p stacks.m$m
 done
 
 # STEP 15-A-iv: Run denovo_map on the subset of samples.
