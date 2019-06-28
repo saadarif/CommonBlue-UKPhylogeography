@@ -29,7 +29,6 @@ for m in $m_values ;do
                  mkdir -p stacks.m$m/stacks.M$M
         done
 
-
         for M in $M_values ;do
                 n=$M
                 echo "Running Stacks for m=$m M=$M, n=$n..."
@@ -52,7 +51,7 @@ for m in $m_values ;do
                 out_dir=$stacks_dir/populations.p2
                 mkdir -p $out_dir
                 log_file=$out_dir/populations.oe
-                populations -P $stacks_dir -O $out_dir -p 2 &> $log_file
+                populations -P $stacks_dir -O $out_dir -M $popmap -p 2 --fasta_samples_raw --vcf --fasta_samples &> $log_file
         done
 
 #close m loop
