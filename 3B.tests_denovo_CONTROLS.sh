@@ -51,7 +51,7 @@ for m in $m_values ;do
                 out_dir=$stacks_dir/populations.p2
                 mkdir -p $out_dir
                 log_file=$out_dir/populations.oe
-                populations -P $stacks_dir -O $out_dir -M $popmap -p 2  --vcf --fasta-samples &> $log_file
+                populations -P $stacks_dir -O $out_dir -M $popmap -r 1.0 -p 2  --vcf --fasta-samples &> $log_file
         done
 
 #close m loop

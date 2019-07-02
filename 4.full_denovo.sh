@@ -24,7 +24,7 @@ for sample in $(cut -f1 ../../INFO/popmap.tsv) ;do
 	echo "Running ustacks on $sample.."
 	fq_file=../../cleanData/$sample.fq.gz
 	logfile=$sample.ustacks.oe
-	ustacks -f $fq_file -i $index -o ./ -M $M -m $m -p6 &> $logfile
+	ustacks -f $fq_file -i $index -o ./ -M $M -m $m -p 6 &> $logfile
 	index=$(( $index + 1 ))
 done
 
@@ -55,7 +55,7 @@ awk '$3=="y" {print $0}' ../../INFO/n_reads_per_sample.tsv | cut -f1,4 > ../../I
 #		| sed -r 's/([A-Za-z]+)(.+)/\1\2\t\1/'
 
 # STEP 17-A-vi: Run cstacks
-echo "Running csstacks..."
+echo "Running cstacks..."
 cstacks -P ./ -M ../../INFO/popmap.catalog.tsv -n $n -p 6 &> cstacks.oe
 
 # STEP 17-A-vii: Run sstacks on every sample
@@ -77,8 +77,6 @@ tsv2bam -P ./ -M ../../INFO/popmap.tsv  -t 6
 echo "Running gstacks ..."
 gstacks  -P ./ -M ../../INFO/popmap.tsv  -t 6
 
-
-
 # STEP 21: Filter genotypes with populations.
 
 #filter at r 0.8
@@ -87,8 +85,8 @@ min_samples=0.80
 min_pops=15
 min_maf=0.05
 max_obs_het=0.70
-populations -P ./ -r $min_samples -p $min_pops --min_maf=$min_maf --max_obs_het=$max_obs_het \
-	   -O populations.r80.p15 --vcf --genepop &> populations.r80.p15/populations.oe
+populations -P ./ -r $min_samples -p $min_pops --min-maf=$min_maf --max-obs-het=$max_obs_het \
+	   -O populations.r80.p15 --vcf --genepop --radpainter &> populations.r80.p15/populations.oe
 
 #filter at r 0.7
 mkdir -p populations.r70.p15
@@ -96,5 +94,14 @@ min_samples=0.70
 min_pops=15
 min_maf=0.05
 max_obs_het=0.70
-populations -P ./ -r $min_samples -p $min_pops --min_maf=$min_maf --max_obs_het=$max_obs_het \
-           -O populations.r70.p15 --vcf --genepop &> populations.r70.p15/populations.oe
+populations -P ./ -r $min_samples -p $min_pops --min-maf=$min_maf --max-obs-het=$max_obs_het \
+           -O populations.r70.p15 --vcf --genepop --radpainter &> populations.r70.p15/populations.oe
+
+#filter at r 0.6
+mkdir -p populations.r60.p15
+min_samples=0.60
+min_pops=15
+min_maf=0.05
+max_obs_het=0.70
+populations -P ./ -r $min_samples -p $min_pops --min-maf=$min_maf --max-obs-het=$max_obs_het \
+           -O populations.r70.p15 --vcf --genepop --radpainter &> populations.r70.p15/populations.oe
