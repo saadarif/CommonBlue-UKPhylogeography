@@ -5,11 +5,7 @@ top=$(readlink -f $(dirname $0)/..)
 #using 24 rep samples in popmap.test_samples.tsv
 
 #try different values of m
-m_values="4 5 6"
-#make subdirectories for different values of m
-for m in $m_values; do
-	mkdir -p stacks.m$m
-done
+m_values="3 4 5 6"
 
 # STEP 15-A-iv: Run denovo_map on the subset of samples.
 popmap=$top/INFO/popmap.test_samples.tsv

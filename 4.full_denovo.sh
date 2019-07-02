@@ -4,7 +4,8 @@ top=$(readlink -f $(dirname $0)/..)
 # STEP 16, STEP 17-A-i: Change directory.
 cd $top/stacks.denovo
 
-# STEP 17-A-ii: Run ustacks on every sample.
+# STEP 17-A-ii: Run ustacks on every sample, use m=M=n=3 based on r80 rule from tests denovo
+# and m=M=n=4 based on the control replicate error analysis
 m=3
 M=3
 n=3
@@ -55,7 +56,7 @@ awk '$3=="y" {print $0}' ../../INFO/n_reads_per_sample.tsv | cut -f1,4 > ../../I
 
 # STEP 17-A-vi: Run cstacks
 echo "Running csstacks..."
-cstacks -P ./ -M ../../INFO/popmap.catalog.tsv -n $n -p 6&> cstacks.oe
+cstacks -P ./ -M ../../INFO/popmap.catalog.tsv -n $n -p 6 &> cstacks.oe
 
 # STEP 17-A-vii: Run sstacks on every sample
 for sample in $(cut -f1 ../../INFO/popmap.tsv) ;do

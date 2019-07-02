@@ -51,7 +51,7 @@ for m in $m_values ;do
                 out_dir=$stacks_dir/populations.p2
                 mkdir -p $out_dir
                 log_file=$out_dir/populations.oe
-                populations -P $stacks_dir -O $out_dir -M $popmap -p 2 --fasta_samples_raw --vcf --fasta_samples &> $log_file
+                populations -P $stacks_dir -O $out_dir -M $popmap -p 2  --vcf --fasta-samples &> $log_file
         done
 
 #close m loop
@@ -94,6 +94,7 @@ for m in $m_values ;do
 	allele_mismatches=$(awk '$3!=$4  {print $0}' $haplotype_file | wc -l)
 	#remove 1 count for the header
 	let allele_mismatches=allele_mismatches-1
+	#consider adding filtered variant loci to allele mismatch value as well?
 	#ignore header files in vcf and extract and save genotypes for each rep
 	tail -n +16 $vcf_file | cut -f10 | cut -d : -f1 > geno1.tmp
 	tail -n +16 $vcf_file | cut -f11 | cut -d : -f1 > geno2.tmp

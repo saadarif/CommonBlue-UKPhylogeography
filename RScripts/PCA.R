@@ -33,15 +33,26 @@ barplot(toto$Hexp - toto$Hobs, main = "Heterozygosity: expected-observed",
 pop(x)
 #Levels: MLG MDC BER TUL DGC RVS OBN
 #Long/Late in same order to nearest site
-MLG=c(-5.834874, 56.991962)# check field notes
-MDC=c(-3.843251, 53.295675) 
-BER=c(-7.213534, 57.713854)
-TUL=c(-7.025334, 58.185530)# check field notes
-DGC=c(-4.016982, 57.878096)
-RVS=c(-2.596053, 56.023971)
-OBN=c(-5.482266, 56.433569)
-coords <- rbind(MLG, MDC, BER, TUL,DGC,RVS,OBN)
-#BWD: -1.125439, 51.782563 #Oxford
+MLG=c(-5.834874, 56.991962)# check field notes 16
+MDC=c(-3.843251, 53.295675) #12
+BER=c(-7.213534, 57.713854)#16
+TUL=c(-7.025334, 58.185530)# check field notes 16
+DGC=c(-4.016982, 57.878096)#14
+RVS=c(-2.596053, 56.023971)#6
+OBN=c(-5.482266, 56.433569)#14
+BMD=c(-1.125439, 51.782563) #Oxford 16
+BWD=c(-3.898247, 50.579755) #devon 7
+ETB=c( 0.243747, 50.769187) #eastbourne 14
+FRN=c(1.982669, 44.157335) #Will's site in France 6
+MMS=c(1.255096, 52.168021) #martin's meadows in suffolk 14
+PCP=c(-4.308992, 51.674219) #Pembrey county park 13
+RHD=c(-1.477433, 54.713907) #Raisby hill durham 13
+RNL=c(-0.281520, 53.254429) #should be Chamber's Farm wood CFW , lincolnshire 10
+
+
+
+coords <- rbind(MLG, MDC, BER, TUL,DGC,RVS,OBN, BMD, BWD, ETB, FRN, MMS, PCP, RHD, RNL)
+
 
 longlat = data.frame(pop=character(length = length(pop(x))), long=numeric(length = length(pop(x))), 
                      lat=numeric(length=length(pop(x))), stringsAsFactors = F)

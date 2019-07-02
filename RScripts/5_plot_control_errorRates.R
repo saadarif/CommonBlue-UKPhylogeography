@@ -13,8 +13,8 @@ d$allele_error <- d$allele_mis/d$shared_loci
 #add snp error rate where se = n_snps/total shared loci
 d$snp_error <- d$n_snps/d$shared_loci
 
-#plot the shared and total loci for different values of m while M=N=3
-d_1 = subset(d, M==3)
+#plot the shared and total loci for different values of m while M=N=2 , default M=2
+d_1 = subset(d, M==2)
 
 # Make sure the table is ordered
 d_1 = d_1[order(d_1$m),]
@@ -27,7 +27,7 @@ pdf('./control_errorRates.pdf')
 plot(NULL,
      xlim=range(d_1$m),
      ylim=range(c(0, d_1$total_loci)),
-     xlab='m , M=n=3',
+     xlab='m , M=n=2',
      ylab='Number of loci',
      main='Number of loci as m increases',
      xaxt='n',
@@ -50,7 +50,7 @@ points(d_1$m, d_1$shared_loci, cex=0.5)
 plot(NULL,
      xlim=range(d_1$m),
      ylim=c(0, 0.15),
-     xlab='m , M=n=3',
+     xlab='m , M=n=2',
      ylab='Error rates',
      main='SNP and Allele error rates as m increases',
      xaxt='n',
@@ -71,7 +71,7 @@ points(d_1$m, d_1$snp_error, cex=0.5)
 
 #========================================================================
 #Allele, Snp error rates Number of loci as M increases
-#plot the shared and total loci for different values of M while m=N=3
+#plot the shared and total loci for different values of M while m=N=2
 d_1 = subset(d, m==3)
 
 # Make sure the table is ordered
