@@ -2,3 +2,4 @@
 work/
 .*
 plotLogLik.sh
+.log
