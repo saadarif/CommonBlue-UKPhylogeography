@@ -85,23 +85,17 @@ min_samples=0.80
 min_pops=15
 min_maf=0.05
 max_obs_het=0.70
-populations -P ./ -r $min_samples -p $min_pops --min-maf=$min_maf --max-obs-het=$max_obs_het \
-	   -O populations.r80.p15 --vcf --genepop --radpainter &> populations.r80.p15/populations.oe
+populations -P ./ -M ../../INFO/popmap.tsv -r $min_samples -p $min_pops --min-maf=$min_maf --max-obs-het=$max_obs_het \
+	   -O populations.r80.p15 --vcf --genepop --radpainter -t 6 &> populations.r80.p15/populations.oe
 
 #filter at r 0.7
 mkdir -p populations.r70.p15
 min_samples=0.70
-min_pops=15
-min_maf=0.05
-max_obs_het=0.70
-populations -P ./ -r $min_samples -p $min_pops --min-maf=$min_maf --max-obs-het=$max_obs_het \
-           -O populations.r70.p15 --vcf --genepop --radpainter &> populations.r70.p15/populations.oe
+populations -P ./ -M ../../INFO/popmap.tsv -r $min_samples -p $min_pops --min-maf=$min_maf --max-obs-het=$max_obs_het \
+           -O populations.r70.p15 --vcf --genepop --radpainter -t 6 &> populations.r70.p15/populations.oe
 
 #filter at r 0.6
 mkdir -p populations.r60.p15
 min_samples=0.60
-min_pops=15
-min_maf=0.05
-max_obs_het=0.70
-populations -P ./ -r $min_samples -p $min_pops --min-maf=$min_maf --max-obs-het=$max_obs_het \
-           -O populations.r70.p15 --vcf --genepop --radpainter &> populations.r70.p15/populations.oe
+populations -P ./ -M ../../INFO/popmap.tsv -r $min_samples -p $min_pops --min-maf=$min_maf --max-obs-het=$max_obs_het \
+           -O populations.r70.p15 --vcf --genepop --radpainter -t 6 &> populations.r70.p15/populations.oe
