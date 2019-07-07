@@ -36,7 +36,7 @@ for m in $m_values; do
 	# STEP 15-A-v: Check that all runs have completed.
 	echo "Checking that all denovo_map runs have completed..."
 	ls stacks.m$m/stacks.M$M.n*/denovo_map.oe | wc
-	wc -l stacks.m$m/stacks.M.n*/denovo_map.oe
+	wc -l stacks.m$m/stacks.M$M.n*/denovo_map.oe
 	grep -iE '\b(err|e:|warn|w:|fail|abort)' stacks.m$m/stacks.M$M.n*/denovo_map.oe stacks.m$m/stacks.M$M.n*/denovo_map.log
 	grep -L 'denovo_map\.pl is done' stacks.m$m/stacks.M$M.n*/denovo_map.log
 
@@ -54,7 +54,8 @@ for m in $m_values; do
 	# STEP 15-A-viii: Compare the results obtained with different parameters
 	mkdir -p stacks.m$m/results_var_n
 	cd stacks.m$m/results_var_n
-
+	
+	#FIXME
 	# Extract the SNPs-per-locus distributions. These distributions
 	# are reported in the log of populations.
 	#result should include the previous run of m=M=n
@@ -62,7 +63,7 @@ for m in $m_values; do
 	echo "Tallying the numbers..."
 	echo -e '#par_set\tM\tn\tm\tn_snps\tn_loci' > n_snps_per_locus.tsv
 	for n in $n_values ;do
-		log_file=../stacks.M${m}*/populations.r80/populations.log.distribs
+		log_file=../stacks.M{3,4}*/populations.r80/populations.log.distribs
 
 		# Extract the numbers for this parameter combination.
 		stacks-dist-extract  $log_file snps_per_loc_postfilters | grep -E '^[0-9]' > $log_file.snps_per_loc
