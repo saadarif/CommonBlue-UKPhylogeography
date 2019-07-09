@@ -4,11 +4,12 @@ top=$(readlink -f $(dirname $0)/..)
 # STEP 16, STEP 17-A-i: Change directory.
 cd $top/stacks.denovo
 
-# STEP 17-A-ii: Run ustacks on every sample, use m=M=n=3 based on r80 rule from tests denovo
-# and m=M=n=4 based on the control replicate error analysis
+# STEP 17-A-ii: Run ustacks on every sample, use m=3 M=n=4 based on r80 rule from tests denovo
+# M=n=4 aslo results in the lowest allele and snp error rates of the control samples.
+#However in the controls m=4 recovered the most shared loci (marignally) even though total loci was less than m3
 m=3
-M=3
-n=3
+M=4
+n=4
 index=1
 
 mkdir -p stacks_m${m}_M${M}_n${n}
@@ -59,11 +60,7 @@ echo "Running cstacks..."
 cstacks -P ./ -M ../../INFO/popmap.catalog.tsv -n $n -p 6 &> cstacks.oe
 
 # STEP 17-A-vii: Run sstacks on every sample
-for sample in $(cut -f1 ../../INFO/popmap.tsv) ;do
-	echo "Running sstacks on $sample .."
-	logfile=$sample.sstacks.oe
-	sstacks -P ./ -M ../../INFO/popmap.tsv -o ./ -p 6 &> $logfile
-done
+sstacks -P ./ -M ../../INFO/popmap.tsv  -p 6 &> sstacks.oe
 
 # (Check that all sstacks runs have completed.)
 # Run tsv2bam to transpose the data so it is stored by locus, instead of by sample. We will include
