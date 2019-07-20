@@ -7,7 +7,7 @@ cd $top/stacks.denovo
 # STEP 17-A-ii: Run ustacks on every sample, use m=3 M=n=4 based on r80 rule from tests denovo
 # M=n=4 aslo results in the lowest allele and snp error rates of the control samples.
 #However in the controls m=4 recovered the most shared loci (marignally) even though total loci was less than m3
-m=3
+m=4
 M=4
 n=4
 index=1
