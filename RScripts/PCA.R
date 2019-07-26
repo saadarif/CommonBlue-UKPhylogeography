@@ -69,28 +69,74 @@ Dgeo <- dist(as.matrix(cbind(coords[,1], coords[,2])))
 #######################################################
 #fwith vcf
 VCF <- read.vcfR("./populations.r50.p15_moh_0.65/populations.snps.filter2.0.5.recode.vcf")
-z <- vcfR2genind(VCF)
+z <- vcfR2genlight(VCF)
 
 #get pops
-popnames <- rownames(z@tab) 
+popnames <- z@ind.names 
 pops <- as.factor(sapply(strsplit(popnames, '_'), function(x){paste0(x[1])}))
 pop(z) = pops
-
-
 
 w <- tab(z, freq = TRUE, NA.method = "mean")
 
 #perform PCA
 w.pca <- dudi.pca(w, scannf = F, scale=F, nf=3)
 
-
 #PCA plot
 col <- funky(15)
 s.class(w.pca$li, pop(z) ,xax=1,yax=2, col=transp(col,.6), axesell=FALSE,
         cstar=0, cpoint=2, clabel=.75, grid=FALSE)
+#add scree to plot
+add.scatter.eig(w.pca$eig[1:10], xax=1, yax=2)
 
 toto <- summary(z)
 ########################################################
+#add latlong information to genlight object
+
+latlong = as.data.frame( z@pop)
+latlong$lat <- NULL
+latlong$lon <- NULL
+
+for (i in 1:dim(latlong)[1]){
+  latlong$lat[i] <- coords[rownames(coords)==latlong[i,1],1]
+  latlong$lon[i] <- coords[rownames(coords)==latlong[i,1],2]
+  
+}
+
+colnames(latlong) <- c("pop","lat", "lon")
+#add lat long to gen light object
+z@other$latlong <- latlong[,2:3]
+#should now be able to use the dartR IBD function
+#add sex information as well
+popnames <- z@ind.names 
+sex<- as.factor(sapply(strsplit(popnames, '_'), function(x){paste0(x[2])}))
+ind <- cbind( z@ind.names, pops, sex, latlong[,2:3])
+colnames(ind)[1] <- "ind"
+z@other$ind.metrics <- ind
+#########################################################
+#ibd with dartR
+library(dartR)
+ibdx <- gl.ibd(z, permutations=9999)
+
+#reshape the dist matrices 
+library(reshape2)
+df <- melt(as.matrix(ibdx$Dgen), varnames = c("pop1", "pop2"))
+colnames(df)[3] <- "dgen"
+df2 <- melt(as.matrix(ibdx$Dgeo), varnames = c("pop1", "pop2"))
+colnames(df2)[3] <- "dgeo"
+df$dgeo <- df2$dgeo
+df[which(df$dgen>0.1 & df$dgeo>13.0),]
+#remove any 0 values
+ibddf <- df[-(df$row==df$col),]
+#plot
+plot(1, type="n", xlab="Log Dist", ylab=expression("F"[st]*"/"*"(1-F"[st]*")"), xlim=c(10.5, 15), ylim=c(0, 0.16))
+#plot bernerary and tul in same colours
+points(ibddf$dgeo[ibddf$col=="BER" ],ibddf$dgen[ibddf$col=="BER" ], pch=19,col="red" )
+points(ibddf$dgeo[ibddf$col=="TUL" ],ibddf$dgen[ ibddf$col=="TUL" ], pch=19,col="blue" )
+points(ibddf$dgeo[ibddf$col=="MLG" ],ibddf$dgen[ ibddf$col=="MLG" ], pch=19,col="Khaki" )
+points(ibddf$dgeo[ibddf$col=="OBN" ],ibddf$dgen[ ibddf$col=="OBN" ], pch=19,col="salmon" )
+points(ibddf$dgeo[ibddf$col=="DGC" ],ibddf$dgen[ ibddf$col=="DGC" ], pch=19,col="black" )
+#everything else
+points(ibddf$dgeo[ibddf$row!="TUL" & ibddf$col!="TUL" & ibddf$row!="BER" & ibddf$col!="BER"],ibddf$dgen[ibddf$row!="TUL" & ibddf$col!="TUL"& ibddf$row!="BER" & ibddf$col!="BER"], pch=19,col="grey80" )
 #writing out lat long data for use with eems
 
 

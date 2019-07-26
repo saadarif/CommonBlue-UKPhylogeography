@@ -8,7 +8,7 @@
 top=$(readlink -f $(dirname $0)/..)
 
 #directory where vcf output is
-vcf_dir=$top/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65/
+vcf_dir=$top/stacks.denovo/stacks_m4_M4_n4/populations.r75.p15_moh_0.65/
 
 #remove loci with more x amount of snps
 bad=5
@@ -26,7 +26,7 @@ vcftools --vcf $vcf_dir/populations.snps.vcf --exclude-positions $vcf_dir/badloc
 #next filter based on missingness in idividuals
 #we use indiviuals missing more than 25% data or missing more than 50%
 miss="0.25 0.5"
-vcftools --vcf $vcf_dir/populations.snps.filter1.recode.vcf --missing-indv -out $vcf_dir/out
+vcftools --vcf $vcf_dir/populations.snps.filter1.recode.vcf --missing-indv --out $vcf_dir/out
 #this shoud output a file called  out.imiss
 
 for b in $miss; do
