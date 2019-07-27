@@ -7,46 +7,48 @@ top=$(readlink -f $(dirname $0)/..)
 #remove loci with >5 snps and removing missing values >0.75 and 0.5
 
 work_dir=$top/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65
-
 cd $work_dir
-
 mkdir -p RadPainter
 mkdir -p RadPainter/miss50
 mkdir -p RadPainter/miss75
 
+#copy original haplotypes csv fil and then remove any genotypes with N
+sed 's/[ACGTN]*N[ACGTN]*//g'  populations.haplotypes.tsv > haps_radpainter
+
+echo "finished removing Ns.."
 #convert stacks haplotypes to radpainter format and filter
-python /opt/fineRADstructure/Stacks2fineRAD.py --infile populations.haplotypes.tsv -n 5 -m 50
+python /opt/fineRADstructure/Stacks2fineRAD.py --infile haps_radpainter -n 5 -m 50
 #move all files to appropriate dir
-mv populations.haplotypes.tsv.* RadPainter/miss50/
+mv haps_radpainter.* RadPainter/miss50/
 
 #second missing filter
-python /opt/fineRADstructure/Stacks2fineRAD.py --infile populations.haplotypes.tsv -n 5 -m 25
+python /opt/fineRADstructure/Stacks2fineRAD.py --infile haps_radpainter -n 5 -m 25
 #move all files to appropriate dir
-mv populations.haplotypes.tsv.* RadPainter/miss75
+mv haps_radpainter.* RadPainter/miss75
 
 #LD thinning
-input_radf_file1=RadPainter/miss50/populations.haplotypes.tsv.fineRADpainter.lociFilt.samples50%missFilt.txt
-input_radf_file2=RadPainter/miss75/populations.haplotypes.tsv.fineRADpainter.lociFilt.samples25%missFilt.txt 
+input_radf_file1=RadPainter/miss50/haps_radpainter.fineRADpainter.lociFilt.samples50%missFilt.txt
+input_radf_file2=RadPainter/miss75/haps_radpainter.fineRADpainter.lociFilt.samples25%missFilt.txt 
 Rscript /opt/fineRADstructure/sampleLD.R -s 1 -n 500 $input_radf_file1 ${input_radf_file1}_reordered.txt
 Rscript /opt/fineRADstructure/sampleLD.R -s 1 -n 500 $input_radf_file2 ${input_radf_file2}_reordered.txt
 
 #Calculate the co-ancestry matrix:
 cd $work_dir/RadPainter/miss50
-input1=populations.haplotypes.tsv.fineRADpainter.lociFilt.samples50%missFilt_reordered.txt
-RADpainter paint $input1
+input1=haps_radpainter.fineRADpainter.lociFilt.samples50%missFilt_reordered.txt
+/opt/fineRADstructure/RADpainter paint ${input1}
 #Assign individuals to populations 
-/opt/finestructure -x 100000 -y 100000 -z 1000 ${input1}_chunks.out ${input1}_chunks.mcmc.xml
+/opt/fineRADstructure/finestructure -x 100000 -y 100000 -z 1000 ${input1}_chunks.out ${input1}_chunks.mcmc.xml
 #tree building
-/opt/finestructure -m T -x 10000 ${input1}_chunks.out ${input1}_chunks.mcmc.xml ${input1}_chunks.mcmcTree.xml
+/opt/fineRADstructure/finestructure -m T -x 10000 ${input1}_chunks.out ${input1}_chunks.mcmc.xml ${input1}_chunks.mcmcTree.xml
 
 #move to other directory and do the same
 cd $work_dir/RadPainter/miss75
 input2=populations.haplotypes.tsv.fineRADpainter.lociFilt.samples25%missFilt_reordered.txt
-RADpainter paint ${input2}
+/opt/fineRADstructure/RADpainter paint ${input2}
 #Assign individuals to populations 
-/opt/finestructure -x 100000 -y 100000 -z 1000 ${input2}_chunks.out ${input2}_chunks.mcmc.xml
+/opt/fineRADstructure/finestructure -x 100000 -y 100000 -z 1000 ${input2}_chunks.out ${input2}_chunks.mcmc.xml
 #tree building
-/opt/finestructure -m T -x 10000 ${input2}_chunks.out ${input2}_chunks.mcmc.xml ${input2}_chunks.mcmcTree.x$
+/opt/fineRADstructure/finestructure -m T -x 10000 ${input2}_chunks.out ${input2}_chunks.mcmc.xml ${input2}_chunks.mcmcTree.x$
 
 #use the rscripts for plotting
 

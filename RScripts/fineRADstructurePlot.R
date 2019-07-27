@@ -26,14 +26,14 @@
 
 
 ### 1) EDIT THE FOLLOWING THREE LINES TO PROVIDE PATHS TO THE fineRADstructure OUTPUT 
-setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks/stacks.denovoM3n3/populations.r80.p7_MAF05_MOH065_NOTSINGLESNP_noContam/fineRadAnalysis/fineRADAnalysis30MissingRemoved/") ## The directory where the files are located
+setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65/RadPainter/miss75/") ## The directory where the files are located
 chunkfile<-"populations.haps_chunks.out" ## RADpainter output file
 mcmcfile<-"populations.haps_chunks.mcmc.xml" ## finestructure mcmc file
 treefile<-"populations.haps_chunks.mcmcTree.xml" ## finestructure tree file
 ### 2) EDIT THIS PATH TO WHERE YOU WANT THE PLOTS:
-plotsFolder <- "/media/data_disk/PROJECTS/Saad/CommonBlue/stacks/stacks.denovoM3n3/populations.r80.p7_MAF05_MOH065_NOTSINGLESNP_noContam/fineRadAnalysis/fineRADAnalysis30MissingRemoved/"
+plotsFolder <- "/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65/RadPainter/miss75/"
 ### 3) SET VALUES FOR THESE VARIABLES: "analysisName" will be included in output plots
-analysisName <- "populations.haps";  maxIndv <- 10000; maxPop<-10000
+analysisName <- "miss75";  maxIndv <- 10000; maxPop<-10000
 
 
 ### 4) EDIT THE PATH TO YOUR COPY of FinestructureLibrary.R
