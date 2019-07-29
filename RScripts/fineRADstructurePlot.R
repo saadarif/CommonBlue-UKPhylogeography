@@ -26,14 +26,14 @@
 
 
 ### 1) EDIT THE FOLLOWING THREE LINES TO PROVIDE PATHS TO THE fineRADstructure OUTPUT 
-setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65/RadPainter/miss75/") ## The directory where the files are located
-chunkfile<-"populations.haps_chunks.out" ## RADpainter output file
-mcmcfile<-"populations.haps_chunks.mcmc.xml" ## finestructure mcmc file
-treefile<-"populations.haps_chunks.mcmcTree.xml" ## finestructure tree file
+setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65/RadPainter/maxSnps5/miss50/") ## The directory where the files are located
+chunkfile<-"haps_radpainter.fineRADpainter.lociFilt.samples50%missFilt.reordered_chunks.out" ## RADpainter output file
+mcmcfile<-"haps_radpainter.fineRADpainter.lociFilt.samples50%missFilt.reordered_chunks.mcmc.xml" ## finestructure mcmc file
+treefile<-"haps_radpainter.fineRADpainter.lociFilt.samples50%missFilt.reordered_chunks.mcmcTree.xml" ## finestructure tree file
 ### 2) EDIT THIS PATH TO WHERE YOU WANT THE PLOTS:
-plotsFolder <- "/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65/RadPainter/miss75/"
+plotsFolder <- "/media/data_disk/PROJECTS/Saad/CommonBlue/plots/fineRadStructure/"
 ### 3) SET VALUES FOR THESE VARIABLES: "analysisName" will be included in output plots
-analysisName <- "miss75";  maxIndv <- 10000; maxPop<-10000
+analysisName <- "m4r50n5miss50";  maxIndv <- 10000; maxPop<-10000
 
 
 ### 4) EDIT THE PATH TO YOUR COPY of FinestructureLibrary.R
@@ -54,10 +54,12 @@ ttree<-extractTree(treexml) ## extract the tree into ape's phylo format
 
 ## Reduce the amount of significant digits printed in the posteror assignment probabilities (numbers shown in the tree):
 ttree$node.label[ttree$node.label!=""] <-format(as.numeric(ttree$node.label[ttree$node.label!=""]),digits=2)
+ttree$tip.label <- gsub("_", "", ttree$tip.label) # get rid of _ in labeles
 # convert to dendrogram format
 tdend<-myapetodend(ttree,factor=1)
 ## Now we work on the MAP state
 mapstate<-extractValue(treexml,"Pop") # map state as a finestructure clustering
+mapstate <- gsub("_", "", mapstate) # get rid of underscores
 mapstatelist<-popAsList(mapstate) # .. and as a list of individuals in populations
 popnames<-lapply(mapstatelist,NameSummary) # population names IN A REVERSIBLE FORMAT (I.E LOSSLESS)
 ## NOTE: if your population labels don't correspond to the format we used (NAME<number>) YOU MAY HAVE TROUBLE HERE. YOU MAY NEED TO RENAME THEM INTO THIS FORM AND DEFINE YOUR POPULATION NAMES IN popnamesplot BELOW
@@ -73,6 +75,9 @@ popdendclear<-fixMidpointMembers(popdendclear) # needed for obscure dendrogram r
 ########################
 ## Plot 1: COANCESTRY MATRIX
 fullorder<-labels(tdend) # the order according to the tree
+#get rid of - 
+rownames(dataraw) <- gsub("_", "", rownames(dataraw))
+colnames(dataraw) <- gsub("_", "", colnames(dataraw))
 datamatrix<-dataraw[fullorder,fullorder] # reorder the data matrix
 
 tmpmat<-datamatrix 
@@ -103,3 +108,4 @@ ycrt=45
 pdf(file=paste(plotsFolder,analysisName,"-PopAveragedCoancestry2.pdf",sep=""),height=25,width=25)
 plotFinestructure(tmpmat,dimnames(tmpmat)[[1]],labelsx=labels(popdendclear),labelsatx=labellocs,xcrt=xcrt,cols=some.colorsEnd,ycrt=ycrt,dend=tdend,cex.axis=1.1,edgePar=list(p.lwd=0,t.srt=90,t.off=-0.1,t.cex=1.2),hmmar=c(3,0,0,1))
 dev.off()
+

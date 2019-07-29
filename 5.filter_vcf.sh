@@ -8,7 +8,7 @@
 top=$(readlink -f $(dirname $0)/..)
 
 #directory where vcf output is
-vcf_dir=$top/stacks.denovo/stacks_m4_M4_n4/populations.r75.p15_moh_0.65/
+vcf_dir=$top/stacks.denovo/stacks_m3_M4_n4/populations.r60.p15_moh_0.65/
 
 #remove loci with more x amount of snps
 bad=5
