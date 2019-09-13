@@ -7,20 +7,25 @@ library(vcfR)
 top="/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/"
 setwd(top)
 stacks_dir <- dir()
-folder_temp="populations.r50.p15_moh_0.65"
+folder_temp="populations.r50.p11_moh_0.65"
 #different r cuttoffs
-r_vals=c("50", "60","70","75")
+r_vals=c("50", "60")
 vcf_temp="populations.snps.filter2.0.5.recode.vcf"
 #different missigness cutoffs
 missing_vals=c("0.5", "0.25")
 
 #file for plotting the pcas
-pdf('../plots/AllPCAs.pdf')
+pdf('../plots/PCAs_p11.pdf')
 
 for (s_dir in stacks_dir){
   m_dir=paste0(top,"/", s_dir)
   #get stacks paramter m value
   m = unlist(strsplit(s_dir, '_'))[2]
+  print(m)
+  #skip m as necessary
+  if (m=="m3"){
+	next
+  }
   for (r in r_vals){
     folder <- gsub("50", r , folder_temp)
     vcf_dir=paste0(m_dir, "/",folder)

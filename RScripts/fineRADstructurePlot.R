@@ -26,14 +26,14 @@
 
 
 ### 1) EDIT THE FOLLOWING THREE LINES TO PROVIDE PATHS TO THE fineRADstructure OUTPUT 
-setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65/RadPainter/maxSnps5/miss50/") ## The directory where the files are located
-chunkfile<-"haps_radpainter.fineRADpainter.lociFilt.samples50%missFilt.reordered_chunks.out" ## RADpainter output file
-mcmcfile<-"haps_radpainter.fineRADpainter.lociFilt.samples50%missFilt.reordered_chunks.mcmc.xml" ## finestructure mcmc file
-treefile<-"haps_radpainter.fineRADpainter.lociFilt.samples50%missFilt.reordered_chunks.mcmcTree.xml" ## finestructure tree file
+setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m5_M4_n4/populations.r50.p15_moh_0.65/RadPainter/miss75//") ## The directory where the files are located
+chunkfile<-"fineRADpainter.lociFilt.samples25%missFilt_reordered_chunks.out" ## RADpainter output file
+mcmcfile<-"fineRADpainter.lociFilt.samples25%missFilt_reordered_chunks.mcmc.xml" ## finestructure mcmc file
+treefile<-"fineRADpainter.lociFilt.samples25%missFilt_reordered_chunks.mcmcTree.xml" ## finestructure tree file
 ### 2) EDIT THIS PATH TO WHERE YOU WANT THE PLOTS:
 plotsFolder <- "/media/data_disk/PROJECTS/Saad/CommonBlue/plots/fineRadStructure/"
 ### 3) SET VALUES FOR THESE VARIABLES: "analysisName" will be included in output plots
-analysisName <- "m4r50n5miss50";  maxIndv <- 10000; maxPop<-10000
+analysisName <- "m5r50n5miss75";  maxIndv <- 10000; maxPop<-10000
 
 
 ### 4) EDIT THE PATH TO YOUR COPY of FinestructureLibrary.R

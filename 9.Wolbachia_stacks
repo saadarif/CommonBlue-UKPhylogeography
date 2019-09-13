@@ -1,0 +1,109 @@
+#!/bin/bash
+top=$(readlink -f $(dirname $0)/..)
+echo$top
+#this script filters out raw reads from samples matching wolbachia 
+#(usign centrigue and Pavian) from samples with >1% infection rate 
+#(wolbachia classified/total bacterial classified)
+
+
+# STEP 1 filter individuals with greater than 1 % > wolbachia classifies
+work_dir=$top/Wolbachia
+cd $work_dir
+
+#make a direcory to store sample reads
+#mkdir -p $top/cleanData/Wolbachia_reads
+#set dir for storing filtered reads
+#reads_out=$top/cleanData/Wolbachia_reads
+
+#awk '{if($6>1 && $6!="NA") print $1'} Wolbachia_infection.csv > infected_inds.tmp
+#remove the first line 
+#awk '{if (NR!=1) {print}}'  infected_inds.tmp > infected_inds.tsv
+#rm *.tmp
+
+#get the centrigure results for this individuals 
+#while read sample; do
+#   echo "Working on sample: $sample"
+   #this is the centrifuge result for the sample with one line per read
+#   cf_file=$top/centriuge/bacteria/cleaned_fastq/${sample}.fq.gz_cf_result
+   #this is the ncbi tax id for the Wolbachia endosymbiont of Drosophila simulans
+#   wolbachia_taxid="77038"
+#   grep -w "$wolbachia_taxid" $cf_file | awk '{print $1}' >  ${sample}_wolbachia_reads.tmp
+   #remove any dups
+#   awk '!seen[$0]++' ${sample}_wolbachia_reads.tmp > ${sample}_wolbachia.reads
+   #cleanup
+#   rm *.tmp
+   #use seqtq to get the required reads
+ #  /opt/seqtk/seqtk subseq ../cleanData/${sample}.fq.gz  ${sample}_wolbachia.reads > $reads_out/${sample}_wolbachia770038.fq.gz
+#done < infected_inds.tsv
+
+#run stacks on the cleaned reads
+#use the settings used for the common blue genomes
+m=3
+M=4
+n=4
+index=1
+
+mkdir -p stacks_m${m}_M${M}_n${n}
+
+stacks_dir=stacks_m${m}_M${M}_n${n}
+cd $stacks_dir
+#run ustacks
+for sample in $(cut -f1 ../wolbachia_infected_popmap) ;do
+	echo "Running ustacks on $sample.."
+	fq_file=../../cleanData/Wolbachia_reads/${sample}_wolbachia770038.fastq
+	logfile=$sample.ustacks.oe
+	ustacks -f $fq_file -i $index -o ./ -M $M -m $m -t fastq --name ${sample} -p 4 &> $logfile
+	index=$(( $index + 1 ))
+done
+
+# Check that all ustacks runs have completed.
+echo "Checking that all ustacks runs have completed..."
+ls *.ustacks.oe | wc
+wc -l *.ustacks.oe
+grep -iE '\b(err|e:|warn|w:|fail|abort)' *.ustacks.oe
+grep -L 'ustacks is done' *.ustacks.oe
+
+
+# Run cstacks with all inidviduals in catalog
+echo "Running cstacks..."
+cstacks -P ./ -M ../wolbachia_infected_popmap -n $n -p 4 &> cstacks.oe
+
+#Run sstacks on every sample
+sstacks -P ./ -M ../wolbachia_infected_popmap  -p 4 &> sstacks.oe
+
+# (Check that all sstacks runs have completed.)
+# Run tsv2bam to transpose the data so it is stored by locus, instead of by sample. We will include
+
+echo "Running tsvbam ..."
+tsv2bam -P ./ -M ../wolbachia_infected_popmap  -t 4
+
+#run gstacks
+echo "Running gstacks ..."
+gstacks  -P ./ -M ../wolbachia_infected_popmap  -t 4
+
+#run population for furhter filter and call genotypes
+#filter at r 0.5 (50 % of samples 
+mkdir -p populations.r50
+min_samples=0.50
+min_maf=0.05
+max_obs_het=0.65
+populations -P ./ -M ../wolbachia_infected_popmap -r $min_samples  --min-maf=$min_maf --max-obs-het=$max_obs_het \
+	   -O populations.r50 --fstats\
+	   --vcf --genepop --fasta-loci --fasta-samples -t 3 &> populations.r50/populations.oe
+
+mkdir -p populations.r50.p3
+populations -P ./ -M ../wolbachia_infected_popmap -r $min_samples -p 3 --min-maf=$min_maf --max-obs-het=$max_obs_het \
+           -O populations.r50.p3 --fstats\
+           --vcf --genepop --fasta-loci --fasta-samples -t 3 &> populations.r50.p3/populations.oe
+
+
+#blast loci against ncbi nr database
+
+#cd  populations.r50
+
+#mkdir -p RemoteBlast
+
+#/opt/ncbi-blast-2.7.1+/bin/blastn -db nt -remote -query populations.loci.fa \
+#-outfmt '6 qseqid qlen slen qcovhsp sseqid staxids sskingdoms sscinames scomnames bitscore score evalue pident qstart qend sstart send'  \
+#-max_hsps 1 -evalue 1e-10 -out RemoteBlast/nt_blast_NoMAXTarSeq
+

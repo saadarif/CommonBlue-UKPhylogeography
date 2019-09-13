@@ -100,3 +100,12 @@ mkdir -p populations.r50.p15_moh_0.65
 min_samples=0.50
 populations -P ./ -M ../../INFO/popmap.tsv -r $min_samples -p $min_pops --min-maf=$min_maf --max-obs-het=$max_obs_het \
            -O populations.r50.p15_moh_0.65 --fstats --vcf --genepop --radpainter -t 4 &> populations.r50.p15_moh_0.65/populations.oe
+
+#adittional pop filters
+mkdir -p populations.r50.p11_moh_0.65
+populations -P ./ -M ../../INFO/popmap.tsv -r 0.5 -p 11 --min-maf=0.05 --max-obs-het=0.65 \
+           -O populations.r50.p11_moh_0.65 --fstats --vcf --phylip --phylip-var -t 4 &> populations.r50.p11_moh_0.65/populations.oe
+
+mkdir -p populations.r50.p8_moh_0.65
+populations -P ./ -M ../../INFO/popmap.tsv -r 0.5 -p 8 --min-maf=0.05 --max-obs-het=0.65 \
+           -O populations.r50.p8_moh_0.65 --fstats --vcf --phylip --phylip-var -t 4 &> populations.r50.p8_moh_0.65/populations.oe

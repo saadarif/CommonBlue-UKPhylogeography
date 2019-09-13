@@ -5,7 +5,7 @@ top=$(readlink -f $(dirname $0)/..)
 #using 24 rep samples in popmap.test_samples.tsv
 
 #try different values of m
-m_values="3 4 5 6"
+m_values="7 8 9 10 11 12"
 
 # STEP 15-A-iv: Run denovo_map on the subset of samples.
 popmap=$top/INFO/popmap.test_samples.tsv
@@ -28,7 +28,7 @@ for m in $m_values; do
 		reads_dir=../cleanData
 		out_dir=stacks.m$m/stacks.M$M
 		log_file=$out_dir/denovo_map.oe
-		denovo_map.pl -T 6  --samples $reads_dir --popmap $popmap -o $out_dir  -M $M -n $n -m $m  &> $log_file
+		denovo_map.pl -T 4  --samples $reads_dir --popmap $popmap -o $out_dir  -M $M -n $n -m $m  &> $log_file
 	#end of M/N values loop
 	done
 
