@@ -5,7 +5,7 @@ top=$(readlink -f $(dirname $0)/..)
 #using 24 rep samples in popmap.test_samples.tsv
 
 #try different values of m
-m_values="7 8 9 10 11 12"
+m_values="2"
 
 # STEP 15-A-iv: Run denovo_map on the subset of samples.
 popmap=$top/INFO/popmap.test_samples.tsv

@@ -35,5 +35,5 @@ barplot(as.vector(t(mind)), ylim=c(0,0.5), ylab= "Percent Missig Data", col=lane
 library(ggplot2)
 stopifnot(names(mind) == laneInfo$V2)
 laneInfo$miss <- as.vector(t(mind))
-ggplot(laneInfo, aes(x = pops, y = miss, fill = lane)) + geom_boxplot() + theme_bw()
+ggplot(laneInfo, aes(x = pops, y = miss, fill = lane)) + geom_boxplot() + theme_light()
 boxplot(as.vector(t(mind))~ laneInfo$pops , col=laneInfo$lane)

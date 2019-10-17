@@ -14,7 +14,7 @@ library(reshape2)
 library("ggplot2")
 
 #Descend into appropriate directory
-setwd('/media/data_disk/PROJECTS/Saad/CommonBlue/')
+setwd('/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65/')
 
 # Load the genotypes.
 #x = read.genepop('./populations.r50.p15_moh_0.65/populations.snps.gen')
@@ -72,7 +72,7 @@ Dgeo <- dist(as.matrix(cbind(coords[,1], coords[,2])))
 
 #######################################################
 #fwith vcf
-VCF <- read.vcfR("stacks.denovo/stacks_m5_M4_n4/populations.r50.p15_moh_0.65/Structure/populations.snps.filter2.0.25.recode.singlesnp.vcf")
+VCF <- read.vcfR("fastStructure/populations.snps.filter2.0.25.recode.singlesnp.vcf")
 z <- vcfR2genlight(VCF)
 
 #get pops
@@ -150,8 +150,8 @@ toto <- summary(z)
 gl.tree.nj(z, type="phylogram", outgroup = "FRN")
 
 #UPGMA tree with bootstrap support
-tree <- aboot(z, tree = "upgma", distance = bitwise.dist, sample = 100, showtree = F, cutoff = 50, quiet = T)
-cols <- brewer.pal(n = nPop(z), name = "Dark2")
+tree <- aboot(z, tree = "upgma", distance=bitwise.dist, sample = 100, showtree = F, cutoff = 50, quiet = T)
+cols <- brewer.pal(n = nPop(z), name = "rainbow")
 plot.phylo(tree, cex = 0.8, font = 2, adj = 0, tip.color =  cols[pop(z)])
 nodelabels(tree$node.label, adj = c(1.3, -0.5), frame = "n", cex = 0.8,font = 3, xpd = TRUE)
 #legend(35,10,c("CA","OR","WA"),cols, border = FALSE, bty = "n")
@@ -208,8 +208,8 @@ var.test(aic ~ z@other$ind.metrics$sex,
 
 #manual permutation test
 
-test_stat = numeric(length=100)
-for (i in 1:100 )
+test_stat = numeric(length=1000)
+for (i in 1:1000 )
 {
   perm = sample(z@other$ind.metrics$sex, replace=FALSE)
   test_stat[i] <-sexbias.test(hf, perm, test="vAIc")$statistic
@@ -285,7 +285,10 @@ ggheatmap +
 
 
 #locus specific fst
-locusfst<-Fst(as.loci(geni), pop=pop(geni))
+locusfst<-Fst(as.loci(geni), pop=pop(geni))TGCAGCCTCTCCCGACGTCTCCCGTGACCTCCCGAGCGCCGCTGTCCAGTCTCGTGTAGTGTTCGCTCGACTCCGCCGGCGCGGATGGACATTTT
+
+
+
 #---------------------------------------------------------------
 #identifying sex linked markers
 #get sex
@@ -323,7 +326,7 @@ for (i in 1:dim(mat)[2]){
 #females are never homozygoyous with putative sex linked markers
 #look at coverage at some of these markers
 #excample
-marker_results$locus[marker_results$aic<10]
+marker_results$locus[marker_results$aic<11]
 #get marker row
 
 #based on 25% missing data filter
@@ -341,11 +344,11 @@ marker_results$locus[marker_results$aic<10]
     20107                       # 3 snps with inconsistent signal
     25088"""                    # 4 snps with incosnsitent signal
 
-grab=which(VCF@fix[,1] == "5968")
+grab=which(VCF@fix[,1] == "3377")
 #extract info
 gt<- sapply(strsplit(VCF@gt[grab[1],2:length(VCF@gt[grab[1],])], ':'), function(x){paste0(x[1])})
 gt[gt=="./."] <- NA
-dp <- as.numeric(sapply(strsplit(VCF@gt[grab[1],2:length(VCF@gt[grab[1],])], ':'), function(x){paste0(x[2])}))
+dp <- as.numeric(sapply(strsplit(VCF@gt[grab[2],2:length(VCF@gt[grab[2],])], ':'), function(x){paste0(x[2])}))
 ad <- (sapply(strsplit(VCF@gt[grab[1],2:length(VCF@gt[grab[1],])], ':'), function(x){paste0(x[3])}))
 ad[ad=="."] <- NA
 #get sex and pop
@@ -378,3 +381,18 @@ for (i in 1:length(indNames(x))){
 }
 
 write.table(longlat, "/media/data_disk/PROJECTS/Saad/CommonBlue/eemsAnalysis/coords", quote=F, row.names = F, col.names = F)
+
+#----------------------------------------------
+#pcadapt
+install.packages("pcadapt")
+library(pcadapt)
+
+filename <- read.pcadapt("fastStructure/populations.snps.filter2.0.25.recode.singlesnp.vcf", type="vcf")
+x <- pcadapt(filename, K=10)
+x <- pcadapt(filename, K=2)
+summary(x)
+#outlier detection using q-values
+library(qvalue)
+qval <- qvalue(x$pvalues)$qvalues
+alpha=0.05
+outliers <- which(qval < alpha)

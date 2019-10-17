@@ -3,7 +3,7 @@ library("ggtree")
 library("adegenet")
 library("ape")
 
-setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65/TreeBuilding/raxml-ng_out_allsnps_FRNoutg///")
+setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65/TreeBuilding/raxml-ng_out//")
 
 tbeTree <-read.newick("T14_tbeSup.raxml.support", node.label='support')
 
@@ -25,8 +25,9 @@ populations <- split(dat$ind, dat$colour)
 
 #add group info to tree
 
-p <- ggtree(tbeTree) + theme_tree2() + geom_text2(aes(subset =  (support > .8), label="*"), size=7, col="black", nudge_x = -0.0001, nudge_y = -1, hjust = 1) 
-p <- groupOTU(p, populations, 'Location') + aes(color=Location) +  scale_fill_discrete(name = "Location") + scale_color_manual(values = c("grey","black", "red", "khaki", "purple" ), na.value = "black", name = "Location") +theme(legend.position = c(0.1, .8),  legend.box.margin = margin(0, 0, 0, 0, "cm"), legend.key.size = unit(1.2, "cm") )  +
+p <- ggtree(tbeTree) + theme_tree2() + geom_text2(aes(subset =  (support > .7), label=round(support,2)), size=2, col="black", nudge_x = -0.0001, nudge_y = -1, hjust = 1) 
+p <- groupOTU(p, populations, 'Location') + aes(color=Location) +  scale_fill_discrete(name = "Location") +
+   scale_color_manual(values = c("grey","black", "red", "khaki", "purple" ), na.value = "black", name = "Location") +theme(legend.position = c(0.1, .8),  legend.box.margin = margin(0, 0, 0, 0, "cm"), legend.key.size = unit(1.2, "cm") )  +
   guides(color = guide_legend(override.aes = list(size = 5, shape = 15)))
 
 #flip branches
