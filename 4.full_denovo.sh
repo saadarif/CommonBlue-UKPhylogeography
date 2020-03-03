@@ -12,8 +12,8 @@ M=4
 n=4
 index=1
 
-mkdir -p stacks_m${m}_M${M}_n${n}
-cd stacks_m${m}_M${M}_n${n}
+mkdir -p stacks_m${m}_M${M}_n${n}_new
+cd stacks_m${m}_M${M}_n${n}_new
 #NOTE the following samples have been excluded from popmap.tsv
 #due to <500,000 reads
 #OBN_m_114 
@@ -102,10 +102,10 @@ populations -P ./ -M ../../INFO/popmap.tsv -r $min_samples -p $min_pops --min-ma
            -O populations.r50.p15_moh_0.65 --fstats --vcf --genepop --radpainter -t 4 &> populations.r50.p15_moh_0.65/populations.oe
 
 #adittional pop filters
-mkdir -p populations.r50.p11_moh_0.65
-populations -P ./ -M ../../INFO/popmap.tsv -r 0.5 -p 11 --min-maf=0.05 --max-obs-het=0.65 \
-           -O populations.r50.p11_moh_0.65 --fstats --vcf --phylip --phylip-var -t 4 &> populations.r50.p11_moh_0.65/populations.oe
+#mkdir -p populations.r50.p11_moh_0.65
+#populations -P ./ -M ../../INFO/popmap.tsv -r 0.5 -p 11 --min-maf=0.05 --max-obs-het=0.65 \
+#           -O populations.r50.p11_moh_0.65 --fstats --vcf --phylip --phylip-var -t 4 &> populations.r50.p11_moh_0.65/populations.oe
 
-mkdir -p populations.r50.p8_moh_0.65
-populations -P ./ -M ../../INFO/popmap.tsv -r 0.5 -p 8 --min-maf=0.05 --max-obs-het=0.65 \
-           -O populations.r50.p8_moh_0.65 --fstats --vcf --phylip --phylip-var -t 4 &> populations.r50.p8_moh_0.65/populations.oe
+#mkdir -p populations.r50.p8_moh_0.65
+#populations -P ./ -M ../../INFO/popmap.tsv -r 0.5 -p 8 --min-maf=0.05 --max-obs-het=0.65 \
+#           -O populations.r50.p8_moh_0.65 --fstats --vcf --phylip --phylip-var -t 4 &> populations.r50.p8_moh_0.65/populations.oe

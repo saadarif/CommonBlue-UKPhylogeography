@@ -1,0 +1,198 @@
+#Fig X Beast Time tree
+library(tidyverse)
+library(treeio)
+library(ggplot2)
+library(ggtree)
+library(grid)
+library(scatterpie)
+x <- read.beast("/media/data_disk/PROJECTS/Saad/CommonBlue/CO1_BOLD/BEAST/bMT_CCS_sc/run1/CCS_sc_tree_MCC.trees")
+setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts")
+
+#Draw tree for editing for final figure
+
+#rename taxa only to have smaller names
+tipnames <- x@phylo$tip.label
+boldids <- sapply(strsplit(tipnames, "|", fixed=TRUE),  "[", 1)
+country <- sapply(strsplit(tipnames, "|", fixed=TRUE),  "[", 2)
+d <- data.frame(label = tipnames,
+                boldid = boldids, 
+                country= country)
+x2 <- full_join(x, d, by = "label")
+#editing tree data
+#remove hpd ranges for tips
+#x@data[isTip(x, x@data$node),]$height_0.95_HPD <- NA
+#tree plus time scale + units + space for tip labels
+
+p= ggtree(x2) +geom_treescale(x=-4, y=120, fontsize=3)  + scale_x_continuous(name="MYA", labels = abs) + coord_cartesian(clip = 'off') + theme_tree2(plot.margin=margin(6, 120, 6, 6)) 
+p1=revts(p)
+#add uncertainty of time
+p2= p1+geom_range('height_0.95_HPD', color='red', size=2, alpha=.3)
+#add posterior probaility as number +geom_nodelab(aes(x=branch, label=round(posterior*100, 0)), vjust=-.5, size=3, nudge_x = 0.1)
+p3= p2  + geom_tiplab(aes(label=country),size=2)
+#add node labels for further editing
+p3 + geom_label2(aes(subset=!isTip, label=node), size=3, color="darkred", alpha=0.5) 
+
+#for removing bars for plotte terminal naodes
+x2@data$height_0.95_HPD[x2@data$node==218] <- NA
+x2@data$height_0.95_HPD[x2@data$node==281] <- NA
+x2@data$height_0.95_HPD[x2@data$node==298] <- NA
+#x2@data$height_0.95_HPD[x2@data$node==191] <- NA
+x2@data$height_0.95_HPD[x2@data$node==215] <- NA
+x2@data$height_0.95_HPD[x2@data$node==297] <- NA
+x2@data$height_0.95_HPD[x2@data$node==214] <- NA
+x2@data$height_0.95_HPD[x2@data$node==199] <- NA
+#x2@data$height_0.95_HPD[x2@data$node==200] <- NA
+#x2@data$height_0.95_HPD[x2@data$node==192] <- NA
+x2@data$height_0.95_HPD[x2@data$node==193] <- NA
+x2@data$height_0.95_HPD[x2@data$node==197] <- NA
+#p= ggtree(x2) +geom_treescale(x=-4, y=100, fontsize=3)  + scale_x_continuous(name="MYA", labels = abs) + coord_cartesian(clip = 'off') + theme_tree2(plot.margin=margin(6, 6, 6, 6) ) 
+p1 = ggtree(x2) + geom_treescale(x=-4, y=100, fontsize=4)  + scale_x_continuous(name="MYA", breaks=c(0,-2,-4,-6),labels = abs, limits=c(NA,1.1)) + theme_tree2(plot.margin=margin(2, 2, 2, 2) ) 
+p1=revts(p1)
+#add uncertainty of time
+p2= p1+geom_range('height_0.95_HPD', color='red', size=2, alpha=.3)
+#add posterior probaility as number
+#p3= p2 +geom_nodelab(aes(x=branch, subset=!isTip & posterior > 0.7, label=round(posterior*100, 0)),hjust=1.5 size=2, nudge_x = 0.08) #+ geom_tiplab(aes(label=country),size=2)
+p3 = p2 + geom_text2(aes(label=round(posterior*100, 0), subset=posterior>0.7), size=3, nudge_x = -0.15, vjust=-.3)
+#adding posterior in alternative way
+#p3= p2 +   geom_point2(aes(subset=!isTip , fill=round(posterior, 1)), shape=21, size=4) + geom_tiplab(aes(label=country),size=2)
+#add legend
+#p3 + scale_fill_manual(values=c("white", "grey", "black"), guide='legend', 
+#                  name='Bayesian Posterior Support', 
+#                  breaks=c('(0.9,1]', '(0.7,0.9]', '(0,.7]'), 
+#                  labels=expression(BP>=90,70 <= BP * " < 90", BP < 70))  
+
+p3<- ggtree::flip(p3,216,189)  
+p3<- ggtree::flip(p3,217,298)   
+p3<- ggtree::rotate(p3, 189)
+ #add node labels for further editing
+p3 <- collapse(p3, 218, 'max', fill="yellow", col="black", alpha=0.4) 
+#p3 <- scaleClade(p, node=218, scale=.1)
+p3 <- collapse(p3, 281, 'max', fill="yellow", col="black", alpha=0.4) 
+p3 <- collapse(p3, 298, 'max', fill="green", col="black", alpha=0.4) 
+#p3 <- collapse(p3, 192, 'max', fill="purple", col="black", alpha=0.4)
+p3 <- collapse(p3, 193, 'max', fill="purple", col="black", alpha=0.4)
+p3 <- collapse(p3, 197, 'max', fill="purple", col="black", alpha=0.4)
+p3 <- collapse(p3, 214, 'max', fill="purple", col="black", alpha=0.4)
+#p3 <- collapse(p3, 200, 'max', fill="purple", col="black", alpha=0.4)
+#p3 <- collapse(p3, 201, 'max', fill="purple", col="black", alpha=0.4)
+p3 <- collapse(p3, 199, 'max', fill="purple", col="black", alpha=0.4)
+#remove hpd interval for collapsed nodes
+#p3 <- collapse(p3, 219, 'max', fill="yellow", alpha=0.4) 
+#p3 <- scaleClade(p, node=219, scale=.1)
+
+#p4= p3 +   geom_point2(aes(subset=!isTip , fill=cut(posterior, c( 0, 0.75, 0.9, 1.0))), shape=21, size=4) #+ geom_tiplab(aes(label=boldid,size=2))
+
+
+#add legend for bootstrap
+#p5 <- p4 + scale_fill_manual(values=c("white", "grey", "black"), guide='legend', 
+#                  name='Bayesian Posterior Support', 
+#                  breaks=c('(0.9,1]', '(0.7,0.9]', '(0,.7]'), 
+#                  labels=expression(BP>=90,70 <= BP * " < 90", BP < 70))+  
+#      annotate("text", -7.5,180, hjust=0, size=4, fontface=2,label=expression(bold("Bayesian Posterior Support")) ) +    
+#      annotate("point",-7.4, 170, size=3, shape=21,fill="black",color="black") +
+#      annotate("point",-7.4, 160, size=3, shape=21,fill="grey", color="black") +
+#      annotate("point",-7.4, 150, size=3, shape=21,fill="white",color="black") +
+#      annotate("text", -7.2,170, hjust=0, size=4, label=expression("BP" >= 90 )) + 
+#      annotate("text", -7.2,160, hjust=0, size=4,  label= expression(75 <= BP * "< 90"))+
+#      annotate("text", -7.2,150, hjust=0, size=4, label=expression(BP < 75))
+#aste(expression(bold("CO1 Lineage based on Dinca " * italic('et al.') * " (2011)"))
+
+#add annoated to clade colours
+p5 <- p3
+p6 <- p5 + annotate("text", -7.6, c(180,176), hjust=0, fontface=2,size=4, label=c(expression(bold("CO1 Lineage based on")), expression(bold("Dinca " * italic('et al.') * " (2011)"))))+
+  annotate("point",-7.5, 170, size=4, shape=21,fill="yellow",color="black") +
+  annotate("point",-7.5, 160, size=4, shape=21,fill="green", color="black") +
+  annotate("point",-7.5, 150, size=4, shape=21,fill="purple",color="black") +
+  annotate("text", -7.3,170, hjust=0, size=3.5, label="Iberia-Italy") + 
+  annotate("text", -7.3,160, hjust=0, size=3.5,  label= "Palaeartic" )+
+  annotate("text", -7.3,150, hjust=0, size=3.5, label="Alicante & Sierra Nevada")
+
+
+#add clade labels with country locations
+ibit= c(paste0("Italy"), paste0("Spain"),  paste0("Portugal"), paste0("S. France"))
+ibitUK= c(paste0("Great Britain:"), paste0("West Scotland"),  paste0("Northern England"), paste0("South Central England"),paste0("South West England"), paste0("Finland"))
+
+palaeartic=c(paste0("France, Germany"), paste0("Romania, Finland"), paste0("Norway, Netherlands"), paste0("Iran, Turkey"), paste0("Austria, Canada"),
+             paste0("Spain, Italy"), paste0("Greece"))
+palaearticUK= c(paste0("Great Britain:"), paste0("Wales"), paste0("South East England"), paste0("South West England"), paste0("South Central England") )
+#annotate("text", x= 0.1 ,y=c(170,167,164,161), hjust=0, size=2, label=ibit, Parse=TRUE) +
+
+apsnc= c(paste0("Great Britain:"), paste0("Outer Hebrides"), paste0("Inner Hebrides"), paste0("West Scotland"), paste0("Alicante") )
+
+p7 <- p6  +  annotate("text", x= c(.1,0.14,0.14,0.14,.14,.1) ,y=c(17,14,11,8,5,2), hjust=0, size=2.5, label=ibitUK, Parse=TRUE) +
+      annotate("text", x= 0.1 ,y=c(50,47,44,41), hjust=0, size=2.5, label=ibit, Parse=TRUE) +
+      annotate("text", x= 0.1 ,y=c(150,147,144,141,138,135,132), hjust=0, size=2.5, label=palaeartic, Parse=TRUE) +
+      annotate("text", x= c(.1,0.14,0.14,0.14,.14) ,y=c(120,117,114,111,108), hjust=0, size=2.5, label=palaearticUK, Parse=TRUE) +
+      annotate("text", x= 0.1 ,y=187, hjust=0, size=2.5, label="Crete", Parse=TRUE) +
+      annotate("text", x= 0.1 ,y=185, hjust=0, size=2.5, label="Kazakhastan, Norway", Parse=TRUE) +
+      annotate("text", x= 0.1 ,y=182, hjust=0, size=2.5, label=c("Alicante, Germany, Norway") , Parse=TRUE) +
+      annotate("text", x= 0.1 ,y=178, hjust=0, size=2.5, label=c("Sierra Nevada") , Parse=TRUE) +
+      annotate("text", x= c(.1,0.14,0.14,0.14,.1) ,y=c(174,171,168,165,162), hjust=0, size=2.5, label=apsnc, Parse=TRUE)
+p7
+p7 <- p7 + ggtitle("A") + theme(plot.title = element_text(size= 20, hjust=0.05, vjust=-6, margin = margin(b = 0, t = -1, l = 2, unit = "cm")))
+
+P8 <- p7  + geom_point2(aes(subset=node==217), fill='yellow', colour="black", pch=21, size=4) +  geom_point2(aes(subset=node==298), fill='green', colour="black", pch=21, size=4)+
+    geom_point2(aes(subset=node==190), fill='purple', colour="black", pch=21, size=4)
+#pdf(file = "Fig2.pdf", width = 8, height = 11)
+#p7 
+#dev.off()
+
+#plotting BOLD sample lineages (based on Dinca et al on map)
+bold <- read.csv("../../CO1_BOLD/trimmed_alignments/specimen_info.txt", header=T, na.strings=c("", "NA"), row.names = NULL, sep="\t")
+#Keep only UK samples for plotting
+UKdata1 <- bold %>% filter(country=="United Kingdom")
+#group by lineage and then by lat long
+UKdata <- UKdata1 %>% group_by(Lineage.Dinca.et.al..2011., lat,lon) %>%mutate(n= n()) %>% distinct( Lineage.Dinca.et.al..2011.,.keep_all=TRUE)
+
+
+# Get the world polygon and extract UK
+library(maps)
+UK <- map_data("world") %>% filter(region=="UK")
+
+
+p10 <- ggplot() +
+  geom_polygon(data = UK, aes(x=long, y = lat, group = group), fill="grey", alpha=0.3) +theme_void() + ylim(50,59)   +
+  geom_jitter( data=UKdata, aes(x=lon, y=lat, fill=Lineage.Dinca.et.al..2011., size=n) ,position = position_jitter(width = 0.2, height = 0.2), alpha=0.5, colour="black", pch=21) +
+ theme_void() + ylim(50,59) + coord_map() + scale_fill_manual(values=c("purple", "yellow", "green")) + ggtitle("B") + scale_size_continuous(name="No. Specimens", range=c(3,7), breaks=c(1,3,5))+ 
+ guides(fill=FALSE) + theme( legend.position = c(0.84, 0.8),legend.title=element_text(size=8),legend.text = element_text(size=7), plot.background = element_rect( colour = "black", size=1),
+ plot.title = element_text(size= 20, hjust=0.05, vjust=-7, margin = margin(b = -0.1, t = -1, l = 2, unit = "cm")) ) 
+
+    
+    #annotate("text", x= -8 ,y=59, hjust=0, size=2.5, label="B")
+
+p10
+#Plotting map as inset to tree
+vp <- viewport(width = .35, height = .35,  x = 0.2, y = 0.25)
+pdf(file = "Fig2AB.pdf", width = 8, height = 11)
+print(P8)
+print(p10, vp = vp)
+dev.off()
+
+#grouping by lat lon to count lineaage for piecharts
+ukdataPie<-UKdata1 %>% group_by(Lineage,lat,lon) %>% arrange(lat)  %>%  summarise(n=n())%>% spread(Lineage,n)
+names(ukdataPie) <- c("lat", "lon", "A", "IB", "P")
+ukdataPie[is.na(ukdataPie)] <- 0
+ukdataPie$radius <- rowSums(ukdataPie[,c(3:5)])
+
+
+#plotting pie charts instead of bubbles
+#not coord equal or coord fixed perserves the aspect ratio for the pie but alters the map
+
+uk <- map_data("world") %>% filter(region=="UK")
+ggplot(uk, aes(long, lat)) +
+  geom_map(map=uk, aes(map_id=region), fill="grey97", color="grey") + ylim(50,59)   +
+  geom_scatterpie(aes(x=lon, y=lat, r=radius/10), data=ukdataPie, cols=c("A", "IB" , "P"), color="black", alpha=.4 ) + coord_equal() +
+  scale_fill_manual(values = c("A" = "Purple", "IB" = "yellow","P" = "green")) + guides(fill=F) + 
+  theme_void() +
+  geom_scatterpie_legend(ukdataPie$radius/10, 0,58, n=5 , labeller = function(x) x=sort(unique(ukdataPie$radius)))
+
+df <- tibble(
+  g = c(1, 1, 2, 2),
+  x = c(1, 1, 2, 1)
+) %>% group_by(g)
+df %>% distinct()
+df %>% distinct(x)
+
+
+#Supplemental tBLW
+

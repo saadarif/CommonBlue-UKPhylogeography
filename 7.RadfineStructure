@@ -6,7 +6,7 @@ top=$(readlink -f $(dirname $0)/..)
 #first convert the haplotype files to radpainter format
 #remove loci with >5 snps and removing missing values >0.75 and 0.5
 
-work_dir=$top/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65
+work_dir=$top/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65
 cd $work_dir
 mkdir -p RadPainter
 mkdir -p RadPainter/miss50
@@ -17,18 +17,18 @@ mkdir -p RadPainter/miss75
 #will get rid of N in some of the pop names
 #sed 's/[ACGTN/]*N[ACGTN/]*//g'  populations.haplotypes.tsv > haps_radpainter
 #use the folloing to skip the first line
-sed -e '2,$s/[ACGTN/]*N[ACGTN/]*//g'  populations.haplotypes.tsv > haps_radpainter
+#sed -e '2,$s/[ACGTN/]*N[ACGTN/]*//g'  populations.haplotypes.tsv > haps_radpainter
 
-echo "finished removing Ns.."
+#echo "finished removing Ns.."
 #convert stacks haplotypes to radpainter format and filter
-python /opt/fineRADstructure/Stacks2fineRAD.py --infile haps_radpainter -n 5 -m 50
+#python2 /opt/fineRADstructure/Stacks2fineRAD.py --infile haps_radpainter -n 5 -m 50
 #move all files to appropriate dir
-mv haps_radpainter.* RadPainter/miss50/
+#mv haps_radpainter.* RadPainter/miss50/
 
 #second missing filter
-python /opt/fineRADstructure/Stacks2fineRAD.py --infile haps_radpainter -n 5 -m 25
+#python2 /opt/fineRADstructure/Stacks2fineRAD.py --infile haps_radpainter -n 5 -m 25
 #move all files to appropriate dir
-mv haps_radpainter.* RadPainter/miss75
+#mv haps_radpainter.* RadPainter/miss75
 
 #LD thinning
 input_radf_file1=RadPainter/miss50/haps_radpainter.fineRADpainter.lociFilt.samples50%missFilt.txt

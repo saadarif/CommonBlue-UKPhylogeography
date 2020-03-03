@@ -59,12 +59,12 @@ FRN=c(1.982669, 44.157335) #Will's site in France 6
 PCP=c(-4.308992, 51.674219) #Pembrey county park 13
 ETB=c( 0.243747, 50.769187) #eastbourne 14
 MMS=c(1.255096, 52.168021) #martin's meadows in suffolk 14
-RNL=c(-0.281520, 53.254429) #should be Chamber's Farm wood CFW , lincolnshire 10
+CFW=c(-0.281520, 53.254429) #should be Chamber's Farm wood CFW , lincolnshire 10
 RHD=c(-1.477433, 54.713907) #Raisby hill durham 13
 BMD=c(-1.125439, 51.782563) #Oxford 16
 
 
-coords <- rbind(MLG, MDC, BER, TUL, DGC, RVS, OBN, BWD, FRN, PCP, ETB, MMS, RNL, RHD, BMD)
+coords <- rbind(MLG, MDC, BER, TUL, DGC, RVS, OBN, BWD, FRN, PCP, ETB, MMS, CFW, RHD, BMD)
 colnames(coords) <- c("lon", "lat")
 
 #calculating distance from latlon
@@ -72,7 +72,7 @@ Dgeo <- dist(as.matrix(cbind(coords[,1], coords[,2])))
 
 #######################################################
 #fwith vcf
-VCF <- read.vcfR("fastStructure/populations.snps.filter2.0.25.recode.singlesnp.vcf")
+ VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65/fastStructure/populations.snps.filter2.0.25.recode.singlesnp.vcf")
 z <- vcfR2genlight(VCF)
 
 #get pops
@@ -141,7 +141,7 @@ VCF@fix[VCF@fix[,1]=="23511",]
 #get genotypes in usable formate quick
 mat <- as.matrix(z)
 mat[,c("25996_6")]
-xtabs(~mat[,c("25252_19")]+pop(z))
+xtabs(~mat[,c("22789_29")]+pop(z))
 
 #w.pca$c1[which(abs(w.pca$c1[,1]) > 0.035
 toto <- summary(z)
@@ -199,7 +199,7 @@ pop(geni) <-  pops
 #Testing for sex bias
 #covnert genind to hierfstat data frame
 hf<-genind2hierfstat(geni,pop=pop(geni))
-sextest<-sexbias.test(hf, z@other$ind.metrics$sex, test="vAIc")
+sextest<-sexbias.test(hf, z@other$ind.metrics$sex, test="mAIc", nperm=100)
 aic<-AIc(hf)
 boxplot(aic ~ z@other$ind.metrics$sex)
 boxplot(aic[which((hf$pop != "TUL") & (hf$pop != "BER"))] ~  z@other$ind.metrics$sex[which((hf$pop != "TUL") & (hf$pop != "BER"))])
@@ -344,7 +344,7 @@ marker_results$locus[marker_results$aic<11]
     20107                       # 3 snps with inconsistent signal
     25088"""                    # 4 snps with incosnsitent signal
 
-grab=which(VCF@fix[,1] == "3377")
+grab=which(VCF@fix[,1] == "13518")
 #extract info
 gt<- sapply(strsplit(VCF@gt[grab[1],2:length(VCF@gt[grab[1],])], ':'), function(x){paste0(x[1])})
 gt[gt=="./."] <- NA
@@ -387,12 +387,31 @@ write.table(longlat, "/media/data_disk/PROJECTS/Saad/CommonBlue/eemsAnalysis/coo
 install.packages("pcadapt")
 library(pcadapt)
 
-filename <- read.pcadapt("fastStructure/populations.snps.filter2.0.25.recode.singlesnp.vcf", type="vcf")
+filename <- read.pcadapt("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65/fastStructure/populations.snps.filter2.0.25.recode.singlesnp.vcf", type="vcf")
 x <- pcadapt(filename, K=10)
-x <- pcadapt(filename, K=2)
+plot(x, option = "screeplot")
+x <- pcadapt(filename, K=3)
 summary(x)
+plot(x, option = "scores", i=1,j=3, pop = pops)
 #outlier detection using q-values
 library(qvalue)
 qval <- qvalue(x$pvalues)$qvalues
 alpha=0.05
 outliers <- which(qval < alpha)
+
+#--------------------------------------
+#pca for males only
+
+#subset genlight object for males only
+males <- z[z@other$ind.metrics$sex=="m"]
+
+w <- tab(males, freq = TRUE, NA.method = "mean")
+
+#perform PCA
+w.pca <- dudi.pca(w, scannf = F, scale=F, nf=3)
+
+#PCA plot
+col <- funky(15)
+s.class(w.pca$li, pop(males) ,xax=1,yax=2, col=transp(col,.7), axesell=F,
+        cstar=0, cpoint=1.5, clabel=.75, grid=FALSE, addaxes = T) 
+title(xlab= "PC1 (7%)", ylab="PC2 (2%)")
