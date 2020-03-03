@@ -3,3 +3,5 @@ work/
 .*
 plotLogLik.sh
 .log
+.csv
+.xlsx
