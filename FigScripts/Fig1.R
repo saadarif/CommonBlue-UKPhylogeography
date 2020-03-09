@@ -56,10 +56,28 @@ p1 <- ggplot() +
   theme_void() + ylim(50,59) + xlim(NA,2.2) + coord_map() + scale_size_continuous(name="Sample Size", breaks=c(6,10,16))+
   theme(legend.position = c(0.85, 0.8)) 
 
+library(sf)
+library("rnaturalearth")
+library("rnaturalearthdata")
+require(rgeos)
+library("ggspatial")
+
+Fr <- ne_countries(scale = "medium", returnclass = "sf", continent="Europe")
+
+
+p3 <- ggplot(data = Fr) +
+  geom_sf(alpha=0.3) + theme_void() +  coord_sf( xlim=c(-5,10),ylim = c(41, 53), expand = TRUE) +
+  geom_point( data=sampling1 %>% filter(POP=="FRN"), aes(x=lon, y=lat, size=Samples), alpha=0.6) + geom_label(data=sampling1 %>% filter(POP=="FRN"), aes(x=lon, y=lat, label=POP), size=3, hjust = 0, nudge_x = 0.2)+
+  theme(legend.position ="none" )
+p3
+
 pdf(file = "Fig1.pdf", width = 8, height = 11)
 p1
 dev.off()
 
+
+
+#-----------------------------------------------------------------------------------
 #alternate maps with scale bar and north
 p2 <- ggplot() +
   geom_polygon(data = UK, aes(x=long, y = lat, group = group), fill="grey",alpha=0.3) +

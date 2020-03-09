@@ -52,6 +52,10 @@ colnames(coords) <- c("lon", "lat")
 coords <- as.data.frame(coords)
 coords$POP <- rownames(coords)
 
+#pairwise fishers tests for proportions
+wol1<- subset(wol,  POP=="BER" | POP=="TUL" |POP=="DGC" |POP=="MLG" |POP=="OBN" |POP=="RHD" )
+pairwise.fisher.test(wol1$infected, wol1$POP,p.adjust.method = "bon")
+
 #suummarize infection levels
 infection <- as.data.frame.matrix(table(wol$POP, wol$infected))
 names(infection) <- c("un", "inf")
@@ -77,7 +81,7 @@ p1
 #relevel the order for POP
 infection$POP <- factor(infection$POP, c("RHD", "RVS", "OBN", "MLG", "DGC", "BER", "TUL"))
 ibp<-ggplot(infection %>% filter(prop>0), aes(x=POP, y=prop)) + geom_bar(stat="identity", alpha=0.5) + theme_bw() +
-ylim(c(0,1)) + xlab("Population") + ylab("Proportion Infected")+ coord_flip() +
+ylim(c(0,1)) + xlab("Population") + ylab("Proportion of Individuals Infected")+ coord_flip() +
 geom_errorbar(aes(x=POP, ymin=prop-se, ymax=prop+se), width=0.1, colour="black", alpha=0.5, size=0.75)+
 theme(axis.text=element_text(size=12),axis.title=element_text(size=14,face="bold"), 
       plot.margin = unit(c(1,1,1,1), "lines"),
@@ -121,10 +125,10 @@ north$POP <- factor(north$POP, c("OBN", "MLG", "DGC", "BER", "TUL"))
 
 
 p2 <- ggplot(north, aes(y=percentage_classified_wolcbachia, x=POP, group=sex, colour=sex)) +
-      geom_jitter(size=2, alpha=0.5, width = 0.25) +  coord_flip() + theme_bw() +
-      xlab("Population") + ylab("% Total Reads Classified as Wolbachia") + geom_point(data=summ_north, aes(y=mean, x=POP, fill=sex),colour="black",size=5, pch=21, alpha=0.5,position=position_dodge(width=0.5))+
-      geom_errorbar(data=summ_north,aes(ymin = mean - stde, ymax = mean + stde),width = 0.25, size = 0.5,position=position_dodge(width=0.5) )+
-      guides(colour=FALSE) + scale_y_continuous(breaks=c(0,10,20,30,40,50))+
+      geom_jitter(size=3, alpha=0.5, width = 0.25) +  coord_flip() + theme_bw() + scale_colour_manual(values=c("black", "grey80"))+
+      xlab("Population") + ylab("Percentage of Classified Reads Mapped to Wolbachia") + geom_point(data=summ_north, aes(y=mean, x=POP, fill=sex),colour="black",size=6, pch=21, alpha=0.5,position=position_dodge(width=0.5))+
+      #geom_errorbar(data=summ_north,aes(ymin = mean - stde, ymax = mean + stde),width = 0.25, size = 0.5,position=position_dodge(width=0.5) )+
+      guides(colour=FALSE) + scale_y_continuous(breaks=c(0,10,20,30,40,50))+scale_fill_manual(values=c("black", "grey80"))+
       theme(legend.position=c(0.8,0.2),axis.text=element_text(size=12),axis.title=element_text(size=14,face="bold"), 
             plot.margin = unit(c(1,1,1,1), "lines"),
             legend.title = element_text( size = 14),
@@ -150,10 +154,10 @@ Text1 = textGrob("Outer\n Hebrides")
 
 p3 <- ggplot(north, aes(y=percentage_classified_wolcbachia, x=POP, colour=sex)) +
   geom_jitter(size=2, alpha=0.5, width = 0.25) +  coord_flip() + theme_bw() +
-  xlab("Population") + ylab("% Total Reads Classified as Wolbachia") + geom_point(data=summ_north, aes(y=mean, x=POP, fill=sex),colour="black",size=5, pch=21, alpha=0.5,position=position_dodge(width=0.5))+
+  xlab("Population") + ylab("Pecentages of classified reads mapped to Wolbachia") + geom_point(data=summ_north, aes(y=mean, x=POP, fill=sex),colour="black",size=5, pch=21, alpha=0.5,position=position_dodge(width=0.5))+
   geom_errorbar(data=summ_north,aes(ymin = mean - stde, ymax = mean + stde),width = 0.25, size = 0.5,position=position_dodge(width=0.5) )+
   guides(colour=FALSE) + scale_y_continuous(breaks=c(0,10,20,30,40,50))+
-  theme(legend.position=c(0.8,0.2),axis.text=element_text(size=12),axis.title=element_text(size=14,face="bold"), 
+  theme(legend.position=c(0.8,0.2),axis.text=element_text(size=14, face="bold"),axis.title=element_text(size=14,face="bold"), 
         plot.margin = unit(c(1,5,1,1), "lines"),
         legend.title = element_text( size = 14),
         legend.text = element_text( size = 12),
@@ -175,14 +179,14 @@ dev.off()
 
 #supplemental figures histogramm abova
 p5 <- ggplot(wolbachia, aes(x=log(percentage_classified_wolcbachia))) + geom_density(fill="grey80", alpha=0.5) + theme_bw() +
-  xlab(expression("Log"[2] *"(percentage reads classified as Wolbachia)")) +
+  xlab(expression("Log"[2] *"(percentage of classified reads mapped Wolbachia)")) +
   theme(axis.text=element_text(size=14, face="bold"),axis.title=element_text(size=14,face="bold"), 
         plot.margin = unit(c(1,5,1,1), "lines"),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank() )
 
 p6 <- ggplot(wolbachia, aes(x=log10(percentage_classified_wolcbachia), y=log10(n_reads))) + geom_point() + theme_bw()+
-  xlab(expression("Log"[10] *"(percentage reads classified as Wolbachia)")) + 
+  xlab(expression("Log"[10] *"(percentage of classified reads mapped to Wolbachia)")) + 
   ylab(expression("Log"[10] *"(Total Reads)")) +
   theme(axis.text=element_text(size=14, face="bold"),axis.title=element_text(size=14,face="bold"), 
         plot.margin = unit(c(1,5,1,1), "lines"),
@@ -192,7 +196,12 @@ p6 <- ggplot(wolbachia, aes(x=log10(percentage_classified_wolcbachia), y=log10(n
 cor.test(log10(wolbachia$percentage_classified_wolcbachia), log10(wolbachia$n_reads), method="spearman")
 
 pdf(file = "FigS6AB.pdf", width = 8, height = 14)
-ggarrange(p5,p6, labels = c("A", "B"), ncol=1, font.label = list(size = 20, color = "black", face = "bold", family = NULL))
+ggarrange(p6,p5, labels = c("A", "B"), ncol=1, font.label = list(size = 20, color = "black", face = "bold", family = NULL))
 dev.off()
 wolbachia[log(wolbachia$percentage_classified_wolcbachia)>0,]
-#supplemental table 
+
+#----------------------------------------------------------------------------------------------------
+#supplemental table stats
+wol1<- subset(wol,  POP=="BER" | POP=="TUL" |POP=="DGC" |POP=="MLG" |POP=="OBN" |POP=="RHD" )
+library(reporttools)
+pairwise.fisher.test(wol$infected, wol$POP,p.adjust.method = "bon")

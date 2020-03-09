@@ -27,14 +27,14 @@
 library(tidyverse)
 
 ### 1) EDIT THE FOLLOWING THREE LINES TO PROVIDE PATHS TO THE fineRADstructure OUTPUT 
-setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/RadPainter/miss75//") ## The directory where the files are located
-chunkfile<-"haps_radpainter.fineRADpainter.lociFilt.samples25%missFilt.txt_reordered_chunks.out" ## RADpainter output file
-mcmcfile<-"haps_radpainter.fineRADpainter.lociFilt.samples25%missFilt.txt_reordered_chunks.mcmc.xml" ## finestructure mcmc file
-treefile<-"haps_radpainter.fineRADpainter.lociFilt.samples25%missFilt.txt_reordered_chunks.mcmcTree.xml" ## finestructure tree file
+setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/RADpainter2/") ## The directory where the files are located
+chunkfile<-"haps_radpainter_reordered_chunks.out" ## RADpainter output file
+mcmcfile<-"haps_radpainter_reordered_chunks.mcmc.xml" ## finestructure mcmc file
+treefile<-"haps_radpainter_reordered_chunks.mcmcTree.xml" ## finestructure tree file
 ### 2) EDIT THIS PATH TO WHERE YOU WANT THE PLOTS:
 plotsFolder <- "/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts/"
 ### 3) SET VALUES FOR THESE VARIABLES: "analysisName" will be included in output plots
-analysisName <- "m4r50n5miss75";  maxIndv <- 10000; maxPop<-10000
+analysisName <- "m4r50n5miss75_new";  maxIndv <- 10000; maxPop<-10000
 
 
 ### 4) EDIT THE PATH TO YOUR COPY of FinestructureLibrary.R
@@ -54,7 +54,7 @@ treexml<-xmlTreeParse(treefile) ## read the tree as xml format
 ttree<-extractTree(treexml) ## extract the tree into ape's phylo format
 
 ## Reduce the amount of significant digits printed in the posteror assignment probabilities (numbers shown in the tree):
-ttree$node.label[ttree$node.label!=""] <-format(a s.numeric(ttree$node.label[ttree$node.label!=""]),digits=2)
+ttree$node.label[ttree$node.label!=""] <-format(as.numeric(ttree$node.label[ttree$node.label!=""]),digits=2)
 ttree$tip.label <- gsub("_", "", ttree$tip.label) # get rid of _ in labeles
 #relabel RNL as CFW
 #ttree$tip.label <- str_replace(ttree$tip.label, "RNL", "CFW")
@@ -85,9 +85,9 @@ datamatrix<-dataraw[fullorder,fullorder] # reorder the data matrix
 
 tmpmat<-datamatrix 
 tmpmat[tmpmat>maxIndv]<-maxIndv #  # cap the heatmap
-#pdf(file=paste(plotsFolder,analysisName,"-SimpleCoancestry.pdf",sep=""),height=25,width=25)
+pdf(file=paste(plotsFolder,analysisName,"-SimpleCoancestry.pdf",sep=""),height=25,width=25)
 plotFinestructure(tmpmat,dimnames(tmpmat)[[1]],dend=tdend,cols=some.colorsEnd,cex.axis=1.1,edgePar=list(p.lwd=0,t.srt=90,t.off=-0.1,t.cex=1.2))
-#dev.off()
+dev.off()
 
 ########################
 ## Plot 2: POPULATIONS AND COANCESTRY AVERAGES

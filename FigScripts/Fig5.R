@@ -18,11 +18,17 @@ wol.VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/Wolbachia/stacks
 
 #convert to genlight
 gl.wol <- vcfR2genlight(wol.VCF)
+
+
+
 #add pop labels
 popnames <- gl.wol@ind.names
 pops <- sapply(strsplit(popnames, '_'), function(x){paste0(x[1])})
 pop(gl.wol) = as.factor(pops)
 ploidy(gl.wol) <- 2
+
+#fixed diffs
+fd <- gl.fixed.diff(gl.wol)
 #make the distance tree
 tree <- aboot(gl.wol, tree = "upgma", distance =bitwise.dist , sample = 1000, showtree = F, cutoff = 50, quiet = T)
 tree#plot the tree
@@ -137,7 +143,7 @@ pp + annotate("text", 0.38,28, hjust=0, size=6, label=expression(atop(italic("Wo
   annotate("text", 0.0,19, hjust=0, size=6, label=expression(atop("Mitochondrial CO1", "(16 SNPs)"))) +
   geom_cladelabel(node=45, label="",offset=0.01,align=TRUE, colour="Purple" ,hjust=-0.1, barsize = 2, alpha=0.5)+ 
   geom_cladelabel(node=32,label="",offset=0.01,align=TRUE, colour="Yellow", angle=90 ,hjust=-0.1, barsize = 2, alpha=0.5)+ 
-  #geom_cladelabel(node=46, label="Alicante-Provence, Sierra Nevada", offset=0.02,align=TRUE, color='black', angle=270, offset.text = 0.01)+ 
+  #geom_cladelabel(node=46, label="Alicante-Sierra Nevada", offset=0.02,align=TRUE, color='black', angle=270, offset.text = 0.01)+ 
   #theme(legend.position = c(0.1,0.85))
   annotate("text", x= -0.01 ,y=42, hjust=0, size=6, label="Population", Parse=TRUE) +
   annotate("point", x= 0.0 ,y=39, hjust=0, size=2, shape=19, colour="#A6CEE3", Parse=TRUE) +
@@ -153,7 +159,7 @@ pp + annotate("text", 0.38,28, hjust=0, size=6, label=expression(atop(italic("Wo
   annotate("point", x= 0.0 ,y=24, hjust=0, size=4, shape=19, colour="#A99099", Parse=TRUE) +
   annotate("text", x= 0.02 ,y=24, hjust=0, size=4, label="RHD (Northern England)", Parse=TRUE) + 
   annotate("text", x=0.23, y=8, angle=270, size =4, label="Iberia-Italy")+
-  annotate("text", x=0.23, y=23, angle=270, size =4, label="Alicante-Provence, Sierra Nevada")+
+  annotate("text", x=0.23, y=23, angle=270, size =4, label="Alicante-Sierra Nevada")+
   annotate("segment", x = 0.29, xend = 0.29, y = 21, yend = 42, colour="black", size=2, alpha=0.5) +
   annotate("segment", x = 0.29, xend = 0.29, y = 1, yend = 20, colour="black", size=2, alpha=0.5) +
   annotate("text", x=0.28, y=30, angle=90, size =4, label="Strain A")+
@@ -200,9 +206,10 @@ indNames(gi.co1) <- shortname
 #add pops
 pop(gi.co1) <-  sapply(strsplit(shortname, '_'), function(x){paste0(x[1])})
 #copnvert to gen light for bitwise dist
-gl.co1<- gi2gl(gi.co1)
-ploidy(gl.co1) <-2
-co1tree <- aboot(gl.co1, tree = "nj", dist=bitwise.dist,sample = 1000, showtree = F, cutoff = 50, quiet = T)
+
+gl.co1<- gi2gl(gi.co1, parallel = F)
+
+co1tree <- aboot(gl.co1, tree = "upgma", dist=bitwise.dist,sample = 1000, showtree = F, cutoff = 50, quiet = T)
 plot.phylo(co1tree, cex = 0.8, font = 2, adj = 0,tip.color =  cols[pop(gi.co1)] )
 nodelabels(co1tree$node.label, adj = c(1.3, -0.5), frame = "n", cex = 0.8,font = 3, xpd = TRUE)
 #legend(35,10,c("CA","OR","WA"),cols, border = FALSE, bty = "n")
@@ -272,7 +279,7 @@ d2$x <- max(d2$x) - d2$x + max(d1$x) + 1
 d2$x <-d2$x - 0.9
 
 
-pp <- p2  + geom_tree(data=d2)   + geom_text2(aes(subset =  (support > 97) & !(isTip), label=support), data=d2, hjust=-.3,  vjust=-.5)+
+pp <- p2  + geom_tree(data=d2)   + geom_text2(aes(subset =  (support > 70) & !(isTip), label=support), data=d2, hjust=-.3,  vjust=-.5)+
   geom_tippoint(aes(size=geog, colour=pop, group=pop),data=d2,fill="gray80", shape=19, show.legend =TRUE )  #+
 #geom_hilight_encircle(node=33, data=d2,fill='yellow',alpha=0.6) +
 #geom_hilight_encircle(node=46, data=d2,fill='purple', alpha=0.6) 
@@ -283,32 +290,32 @@ dd <- bind_rows(d1, d2) %>%
 pp <- pp + geom_line(aes(x, y, group=label), data=dd, color='grey', alpha=0.5)
 
 #save tree image
-pdf(file = "Fig5.pdf", width = 9, height = 11)
+pdf(file = "FigS8.pdf", width = 9, height = 11)
 #annoatate tree
-pp + annotate("text", 0.38,28, hjust=0, size=6, label=expression(atop(italic("Wolbachia ") * "ddRAD Loci", "(37 loci, 68 SNPs)"))) +
+pp + annotate("text", 0.34,36, hjust=0, size=6, label=expression(atop(italic("Wolbachia ") * "ddRAD Loci", "(37 loci, 74 SNPs)"))) +
   annotate("text", 0.0,19, hjust=0, size=6, label=expression(atop("Mitochondrial CO1", "(16 SNPs)"))) +
-  geom_cladelabel(node=45, label="",offset=0.01,align=TRUE, colour="Purple" ,hjust=-0.1, barsize = 2, alpha=0.5)+ 
-  geom_cladelabel(node=32,label="",offset=0.01,align=TRUE, colour="Yellow", angle=90 ,hjust=-0.1, barsize = 2, alpha=0.5)+ 
-  #geom_cladelabel(node=46, label="Alicante-Provence, Sierra Nevada", offset=0.02,align=TRUE, color='black', angle=270, offset.text = 0.01)+ 
+  geom_cladelabel(node=46, label="",offset=0.01,align=TRUE, colour="Purple" ,hjust=-0.1, barsize = 2, alpha=0.5)+ 
+  geom_cladelabel(node=33,label="",offset=0.01,align=TRUE, colour="Yellow", angle=90 ,hjust=-0.1, barsize = 2, alpha=0.5)+ 
+  #geom_cladelabel(node=46, label="Alicante-Sierra Nevada", offset=0.02,align=TRUE, color='black', angle=270, offset.text = 0.01)+ 
   #theme(legend.position = c(0.1,0.85))
-  annotate("text", x= -0.01 ,y=42, hjust=0, size=6, label="Population", Parse=TRUE) +
-  annotate("point", x= 0.0 ,y=39, hjust=0, size=2, shape=19, colour="#A6CEE3", Parse=TRUE) +
-  annotate("text", x= 0.02 ,y=39, hjust=0, size=4, label="BER (Outer Hebrides)", Parse=TRUE) +
-  annotate("point", x= 0.0 ,y=36, hjust=0, size=2, shape=19, colour="#B15928", Parse=TRUE) +
-  annotate("text", x= 0.02 ,y=36, hjust=0, size=4, label="TUL (Outer Hebrides)", Parse=TRUE) +
-  annotate("point", x= 0.0 ,y=33, hjust=0, size=4, shape=19, colour="#4F9F3B", Parse=TRUE) +
-  annotate("text", x= 0.02 ,y=33, hjust=0, size=4, label="DGC (Scotland North East)", Parse=TRUE) +
-  annotate("point", x= 0.0 ,y=30, hjust=0, size=4, shape=19, colour="#FDAC4F", Parse=TRUE) +
-  annotate("text", x= 0.02 ,y=30, hjust=0, size=4, label="MLG (Scotland West Coast)", Parse=TRUE) +
-  annotate("point", x= 0.0 ,y=27, hjust=0, size=4, shape=19, colour="#D1AAB7", Parse=TRUE) +
-  annotate("text", x= 0.02 ,y=27, hjust=0, size=4, label="OBN (Scotland West Coast)", Parse=TRUE) +
-  annotate("point", x= 0.0 ,y=24, hjust=0, size=4, shape=19, colour="#A99099", Parse=TRUE) +
-  annotate("text", x= 0.02 ,y=24, hjust=0, size=4, label="RHD (Northern England)", Parse=TRUE) + 
+  annotate("text", x= -0.01 ,y=55, hjust=0, size=6, label="Population", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=52, hjust=0, size=2, shape=19, colour="#A6CEE3", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=52, hjust=0, size=4, label="BER (Outer Hebrides)", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=49, hjust=0, size=2, shape=19, colour="#B15928", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=49, hjust=0, size=4, label="TUL (Outer Hebrides)", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=46, hjust=0, size=4, shape=19, colour="#4F9F3B", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=46, hjust=0, size=4, label="DGC (Scotland North East)", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=43, hjust=0, size=4, shape=19, colour="#FDAC4F", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=43, hjust=0, size=4, label="MLG (Scotland West Coast)", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=40, hjust=0, size=4, shape=19, colour="#D1AAB7", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=40, hjust=0, size=4, label="OBN (Scotland West Coast)", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=37, hjust=0, size=4, shape=19, colour="#A99099", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=37, hjust=0, size=4, label="RHD (Northern England)", Parse=TRUE) + 
   annotate("text", x=0.23, y=8, angle=270, size =4, label="Iberia-Italy")+
-  annotate("text", x=0.23, y=23, angle=270, size =4, label="Alicante-Provence, Sierra Nevada")+
-  annotate("segment", x = 0.29, xend = 0.29, y = 21, yend = 42, colour="black", size=2, alpha=0.5) +
-  annotate("segment", x = 0.29, xend = 0.29, y = 1, yend = 20, colour="black", size=2, alpha=0.5) +
-  annotate("text", x=0.28, y=30, angle=90, size =4, label="Strain A")+
-  annotate("text", x=0.28, y=10, angle=90, size =4, label="Strain B")+ 
-  geom_treescale(x=0.45, y=36, fontsize=5) 
+  annotate("text", x=0.23, y=23, angle=270, size =4, label="Alicante-Sierra Nevada")+
+  annotate("segment", x = 0.29, xend = 0.29, y = 29, yend = 55, colour="black", size=2, alpha=0.5) +
+  annotate("segment", x = 0.29, xend = 0.29, y = 1, yend = 27, colour="black", size=2, alpha=0.5) +
+  annotate("text", x=0.28, y=41, angle=90, size =4, label="Strain A")+
+  annotate("text", x=0.28, y=14, angle=90, size =4, label="Strain B")+ 
+  geom_treescale(x=0.4, y=42, fontsize=5) 
 dev.off()

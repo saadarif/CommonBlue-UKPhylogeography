@@ -11,6 +11,7 @@ library(tidyverse)
 require(maps)
 library(grid)
 library(ggrepel)
+library("factoextra")
 
 setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts")
 
@@ -72,21 +73,21 @@ colnames(ind)[1] <- "ind"
 z@other$ind.metrics <- ind
 
 #perform pca with pcaadapt
-library(pcadapt)
+#library(pcadapt)
 
-filename <- read.pcadapt("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.singlesnp.vcf", type="vcf")
-x <- pcadapt(filename, K=10)
-plot(x, option = "screeplot")
+#filename <- read.pcadapt("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf", type="vcf")
+#x <- pcadapt(filename, K=10)
+#plot(x, option = "screeplot")
 #3 princpal components capture should be enough
-x <- pcadapt(filename, K=3)
-summary(x)
+#x <- pcadapt(filename, K=3)
+#summary(x)
 #the third principal component differentiates france from the GB populations
-plot(x, option = "scores", i=1,j=2, pop = pops)
+#plot(x, option = "scores", i=1,j=2, pop = pops)
 
 #get data for plot
-pc_data <- tibble(pc1=x$scores[,1], pc2=x$scores[,2], pc3=x$scores[,3],pop=pops)
+#pc_data <- tibble(pc1=x$scores[,1], pc2=x$scores[,2], pc3=x$scores[,3],pop=pops)
 
-ggplot(pc_data,aes(x=pc1, y=pc2, colour=pop)) + geom_point() +stat_ellipse(level=0.9)
+#ggplot(pc_data,aes(x=pc1, y=pc2, colour=pop)) + geom_point() +stat_ellipse(level=0.9)
 
 
 ## pca using adegent
@@ -201,7 +202,7 @@ labels <- dudi.pca %>% distinct(pop, .keep_all=T)
 
 #current plot with pop colours at random
 p50 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-6, 5), ylim=c(-5,5)) +
-  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + ggtitle("m:4-M:4-n:4, 176 individuals, 5592 SNPs")+
+  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + ggtitle("m:4-M:4-n:4, r-50%, 176 individuals, 5592 SNPs")+
   theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=14, face="bold"),axis.title=element_text(size=14,face="bold"), 
                                                                                              plot.margin = unit(c(1,1,1,1), "lines"))
 p50 <- p50 + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
@@ -232,12 +233,81 @@ labels <- dudi.pca %>% distinct(pop, .keep_all=T)
 
 #current plot with pop colours at random
 p75 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-6, 5), ylim=c(-5,5)) +
-  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + ggtitle("m:4-M:4-n:4, 148 individuals, 5592 SNPs")+
+  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + ggtitle("m:4-M:4-n:4, r-50%, 148 individuals, 5592 SNPs")+
   theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=14, face="bold"),axis.title=element_text(size=14,face="bold"), 
         plot.margin = unit(c(1,1,1,1), "lines"))
 p75 <- p75 + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
 
 pdf(file = "FigS3.pdf", width = 14, height = 8)
 ggarrange(p50,p75, labels = c("A", "B"), font.label = list(size = 20, color = "black", face = "bold", family = NULL))
+dev.off()
+
+#-------------------------------------------
+#PCAs testing effects of missing loci
+
+VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r70.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf")
+z <- vcfR2genlight(VCF)
+
+#get pops and label 
+popnames <- z@ind.names
+pops <- sapply(strsplit(popnames, '_'), function(x){paste0(x[1])})
+pops<- str_replace_all(pops, "RNL", "CFW")
+pop(z) = as.factor(pops) 
+ploidy(z) <- 2
+w <- tab(z, freq = TRUE, NA.method = "mean")
+
+#perform PCA
+w.pca <- dudi.pca(w, scannf = F, scale=F, nf=4)
+
+dudi.pca <- tibble(pc1=w.pca$li[,1], pc2=w.pca$li[,2], pc3=w.pca$li[,3], pc4=w.pca$li[,4], pop=pops)
+#PCA plot
+pc1per <- round(w.pca$eig[1]/sum(w.pca$eig) *100, 1)
+pc2per <- round(w.pca$eig[2]/sum(w.pca$eig) *100, 1)
+pc3per <- round(w.pca$eig[3]/sum(w.pca$eig) *100, 1)
+pc4per <- round(w.pca$eig[4]/sum(w.pca$eig) *100, 1)
+col <- funky(15)
+
+labels <- dudi.pca %>% distinct(pop, .keep_all=T)
+
+#current plot with pop colours at random
+pr70 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-4, 4), ylim=c(-4,4)) +
+  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + ggtitle("m:4-M:4-n:4, r-70%, 177 individuals, 742 SNPs")+
+  theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=14, face="bold"),axis.title=element_text(size=14,face="bold"), 
+        plot.margin = unit(c(1,1,1,1), "lines"))
+pr70 <- pr70 + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
+
+VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r60.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf")
+z <- vcfR2genlight(VCF)
+
+#get pops and label 
+popnames <- z@ind.names
+pops <- sapply(strsplit(popnames, '_'), function(x){paste0(x[1])})
+pops<- str_replace_all(pops, "RNL", "CFW")
+pop(z) = as.factor(pops) 
+ploidy(z) <- 2
+w <- tab(z, freq = TRUE, NA.method = "mean")
+
+#perform PCA
+w.pca <- dudi.pca(w, scannf = F, scale=F, nf=4)
+
+dudi.pca <- tibble(pc1=w.pca$li[,1], pc2=w.pca$li[,2], pc3=w.pca$li[,3], pc4=w.pca$li[,4], pop=pops)
+#PCA plot
+pc1per <- round(w.pca$eig[1]/sum(w.pca$eig) *100, 1)
+pc2per <- round(w.pca$eig[2]/sum(w.pca$eig) *100, 1)
+pc3per <- round(w.pca$eig[3]/sum(w.pca$eig) *100, 1)
+pc4per <- round(w.pca$eig[4]/sum(w.pca$eig) *100, 1)
+col <- funky(15)
+
+labels <- dudi.pca %>% distinct(pop, .keep_all=T)
+
+#current plot with pop colours at random
+pr60 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-6, 5), ylim=c(-5,5)) +
+  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + ggtitle("m:4-M:4-n:4, r-60%, 163 individuals, 2203 SNPs")+
+  theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=14, face="bold"),axis.title=element_text(size=14,face="bold"), 
+        plot.margin = unit(c(1,1,1,1), "lines"))
+pr60 <- pr60 + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
+
+pdf(file = "FigS3.pdf", width = 14, height = 10)
+ggarrange(p50,p75, pr60, pr70, labels = c("A", "B", "C", "D"), ncol=2, nrow=2,font.label = list(size = 20, color = "black", face = "bold", family = NULL))
 dev.off()
 
