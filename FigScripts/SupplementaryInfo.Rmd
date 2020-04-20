@@ -1,0 +1,707 @@
+---
+title: ''
+author: ''
+date: ''
+output:
+  pdf_document:
+    keep_tex: yes
+header-includes:
+- \usepackage{fancyhdr}
+- \usepackage{lineno}
+- \linenumbers
+- \usepackage{pdflscape}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
+fontsize: 12pt
+---
+
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+
+```{r Table S1, message=F, warning=FALSE,echo=F}
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+
+boldd <- read.csv("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts/TableS2_BOLD_specimen_info.csv")
+#select subset for printing
+boldd <- boldd[,c(1:5)]
+#change names
+names(boldd) <- c("BOLD Process ID", "Field ID", "Country", "Province/State", "Region")
+kable(boldd, "latex", longtable=T, caption = "Title") %>% row_spec(0, bold=T) %>%
+kable_styling(font_size = 7, full_width = F, latex_options = "repeat_header") %>% kableExtra::landscape()
+
+```
+
+
+```{r Table S2, message=F, warning=FALSE,echo=F}
+
+#read the table
+sample_info <- read.csv("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts/TableS1.csv")
+#kable(sample_info')
+names(sample_info)[3] <- "Sampling Date"
+kable(sample_info, "latex", longtable=T, caption = "Title",booktabs=T ) %>%  row_spec(0, bold=T) %>%
+kable_styling(font_size = 9, full_width = F) %>% kableExtra::landscape()
+
+```
+
+
+```{r FigS1, warning=FALSE,echo=F, fig.width=11,fig.height=4, message=F, fig.align="center"}
+
+library(grid)
+library(gridExtra)
+library(ggpubr)
+library(ggplot2)
+
+DIR<- dir("/media/data_disk/PROJECTS/Saad/CommonBlue/tests.denovo", pattern="stacks*", full.names = T)
+#append results to end of each file
+res_dir <- paste0(DIR, "/results")
+#get the full paths to each file
+out_files <- sapply(res_dir, dir, pattern="\\.tsv$", full.names=TRUE)
+#read all files into a list
+
+all <- lapply(out_files, read.csv, sep="\t")
+
+# the final data should have a column for m (M=n=2) a column for all loci and a column for only polymorphic loci
+m_analysis=data.frame(m=numeric(), status=character(), n=numeric())
+#populate the data frame
+for (i in all){
+  Mn_2 = subset(i, M==2 & n==2)
+  df_r1 <- data.frame(m=Mn_2$m[1], status="total", n=sum(Mn_2$n_loci[1:length(Mn_2$n_loci)]))
+  df_r2 <- data.frame(m=Mn_2$m[1], status="polymorphic", n=sum(Mn_2$n_loci[2:length(Mn_2$n_loci)]))
+  m_analysis <- rbind(m_analysis, df_r1, df_r2)
+}
+
+p1 <- ggplot(m_analysis, aes(x=m, y=n, group=status, color=status)) + geom_point()+theme_bw() +
+  xlab("m") + ylab("No. of loci") + scale_colour_manual(values=c("black", "grey"),name="",labels=c("Putative Rad Loci", "Polymorphic Rad Loci"))+
+  scale_x_continuous(breaks=1:12)+
+  theme(legend.position=c(0.7,0.75),axis.text=element_text(size=8),axis.title=element_text(size=12,face="bold"), 
+        #plot.margin = unit(c(1,5,1,1), "lines"),
+        legend.title = element_text( size = 7),
+        legend.text = element_text( size = 7),
+        legend.key.size = unit(1,"line"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank() )
+
+#same for M=n
+m3 <- read.csv("/media/data_disk/PROJECTS/Saad/CommonBlue/tests.denovo/stacks.m3/results/n_snps_per_locus.tsv", sep="\t")
+Mn_analysis=data.frame(Mn=numeric(), status=character(), n=numeric())
+#populate the data frame
+for (i in 1:8) {
+  m3_M <- subset(m3, M==i)
+  df_r1 <- data.frame(Mn=m3_M$M[1], status="total", n=sum(m3_M$n_loci[1:length(m3_M$n_loci)]))
+  df_r2 <- data.frame(Mn=m3_M$M[1], status="polymorphic", n=sum(m3_M$n_loci[2:length(m3_M$n_loci)]))
+  Mn_analysis <- rbind(Mn_analysis, df_r1, df_r2)
+}
+
+p2 <- ggplot(Mn_analysis, aes(x=Mn, y=n, group=status, color=status)) + geom_point()+ scale_color_grey()+theme_bw() +
+  xlab("M=n") + ylab("No. of loci") +  scale_colour_manual(values=c("black", "grey"),name="",labels=c("Putative Rad Loci", "Polymorphic Rad Loci"))+
+  scale_x_continuous(breaks=1:8)+
+  theme(legend.position=c(0.7,0.2),axis.text=element_text(size=8),axis.title=element_text(size=12,face="bold"), 
+        #plot.margin = unit(c(1,5,1,1), "lines"),
+        legend.title = element_text( size = 7),
+        legend.text = element_text( size = 7),
+        legend.key.size = unit(1,"line"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank() )
+
+
+ggarrange(p1,p2, labels = c("A", "B"), ncol=3, font.label = list(size = 14, color = "black", face = "bold", family = NULL))
+
+```
+
+**Figure S1**
+
+\pagebreak
+
+```{r FigS2, warning=FALSE,echo=F, fig.width=6,fig.height=5, message=F, fig.align="center", fig.cap="test"}
+d <- read.csv("/media/data_disk/PROJECTS/Saad/CommonBlue/tests.denovo/stacks.m4/results/n_snps_per_locus.tsv", sep="\t")
+m_val <- 4
+
+d = subset(d, M==n & m==m_val)
+# Make sure the table is ordered by number of snps.
+d = d[order(d$n_snps),]
+
+Mn_values = sort(unique(d$M))
+
+# Write the counts in a matrix.
+m = matrix(NA, nrow=length(Mn_values), ncol=max(d$n_snps)+1)
+for(i in 1:nrow(d)) {
+  m[d$M[i],d$n_snps[i]+1] = d$n_loci[i] # [n_snps+1] as column 1 is for loci with 0 SNPs
+}
+
+# Truncate the distributions.
+max_n_snps = 10
+m[,max_n_snps+2] = rowSums(m[,(max_n_snps+2):ncol(m)], na.rm=T)
+m = m[,1:(max_n_snps+2)]
+m = m / rowSums(m, na.rm=T)
+
+# Draw the barplot.
+
+col = rev(heat.colors(length(Mn_values)))
+
+x <- barplot(m,
+        beside=T, col=col, las=1,
+        names.arg=c(0:max_n_snps, paste('>', max_n_snps, sep='')),
+        xlab='Number of SNPs',
+        ylab='Percentage of loci',
+        ylim=c(0,.2),
+        main='Distributions of the number of SNPs per locus\nfor a range of M=n values at m=4'
+)
+legend(87, 0.17, legend=c( Mn_values), fill=c(NA, col))
+text(92, 0.18, labels="M=n", cex=1.5)
+
+```
+
+**Figure S2**
+
+
+```{r Table S3, message=F, warning=FALSE,echo=F}
+
+radstats <- read.csv("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts/TableS3_RADstats_short.csv")
+radstats$Sample <- str_replace_all(radstats$Sample, "_", "")
+#rename cols
+names(radstats)[2:3] <- c("SRA Accession", "Total Reads")
+names(radstats)[5:7] <- c("Average Coverage of Stacks", "Standard Deviation", "No. of Reads Used")  
+kable(radstats, "latex", longtable=T, caption = "Title") %>% row_spec(0, bold=T) %>% column_spec(5:7, width="2 cm") %>%
+kable_styling(font_size = 8, full_width = F, latex_options = "repeat_header") %>% kableExtra::landscape()
+```
+
+
+```{r FigS3, warning=FALSE,echo=F, fig.width=8,fig.height=11, message=F, fig.align="center"}
+library(treeio)
+library(ggplot2)
+library(ggtree)
+x <- read.beast("/media/data_disk/PROJECTS/Saad/CommonBlue/CO1_BOLD/BEAST/modTest_CCS_sc_split_subst/combined.mcc.tree")
+setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts")
+#rename taxa only to have smaller names
+tipnames <- x@phylo$tip.label
+boldids <- sapply(strsplit(tipnames, "|", fixed=TRUE),  "[", 1)
+country <- sapply(strsplit(tipnames, "|", fixed=TRUE),  "[", 2)
+#replace errror and correct formatting
+country<- str_replace_all(country, "Polyommatus_icarus", "Italy")
+country<- str_replace_all(country, "United_Kingdom", "United Kingdom")
+d <- data.frame(label = tipnames,
+                boldid = boldids, 
+                country= country, stringsAsFactors = F)
+d$country[d$boldid=="EULEP004-14"] <- "Crete"
+x2 <- full_join(x, d, by = "label")
+
+#for removing bars for with support less than 0.8
+x2@data$height_0.95_HPD[x2@data$posterior < 0.75] <- NA
+
+p1 = ggtree(x2) + geom_treescale(x=-1.5, y=100, fontsize=4)  + scale_x_continuous(name="MYA", breaks=c(0,-0.5,-1,-1.5,-2,-2.5,-3),labels = abs, limits=c(NA,0.5)) + theme_tree2(plot.margin=margin(2, 2, 2, 2) )  
+p1=revts(p1)
+#add uncertainty of time
+p2= p1+geom_range('height_0.95_HPD', color='black', size=2, alpha=.25)
+#add posterior probaility as number
+#p3= p2 +geom_nodelab(aes(x=branch, subset=!isTip & posterior > 0.7, label=round(posterior*100, 0)),hjust=1.5 size=2, nudge_x = 0.08) #+ geom_tiplab(aes(label=country),size=2)
+p3 = p2 + geom_text2(aes(label=round(posterior, 2), subset=posterior>0.75), size=3, nudge_x = -0.07, vjust=-.3)
+
+#flip nodes for arrangment
+p3<- ggtree::flip(p3,189,216)  
+p3<- ggtree::flip(p3,217,317)
+p3<- ggtree::rotate(p3, 189) 
+
+p3 <- p3 + geom_tiplab(aes(label=paste(x2@extraInfo$boldid, x2@extraInfo$country)), size=1.5)
+
+
+#add annoated to clade colours
+
+p6 <- p3 + annotate("text", -2.6, c(180), hjust=0, fontface=2,size=4, label=c(expression(bold("CO1 Lineage"))))+
+  annotate("point",-2.5, 170, size=4, shape=21,fill="yellow",color="black") +
+  annotate("point",-2.5, 160, size=4, shape=21,fill="green", color="black") +
+  annotate("point",-2.5, 150, size=4, shape=21,fill="purple",color="black") +
+  annotate("point",-2.5, 140, size=4, shape=21,fill="red",color="black") +
+  annotate("text", -2.3,170, hjust=0, size=3.5, label="Iberia-Italy") + 
+  annotate("text", -2.3,160, hjust=0, size=3.5,  label= "Palaeartic" )+
+  annotate("text", -2.3,150, hjust=0, size=3.5, label="Alicante")+
+  annotate("text", -2.3,140, hjust=0, size=3.5, label="Sierra Nevada")
+
+P8 <- p6 + geom_hilight(218,fill = "yellow", alpha = 0.25) + geom_hilight(317,fill = "green", alpha = 0.25) + 
+  geom_hilight(195,fill = "purple", alpha = 0.25) + geom_hilight(191,fill = "red", alpha = 0.25) 
+
+print(P8)
+
+```
+
+**Figure S3**
+
+\pagebreak
+
+```{r FigS4, warning=FALSE,echo=F, fig.width=9,fig.height=9, message=F, fig.align="center"}
+include_graphics("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts/TCSNetwork_latest2.pdf")
+```
+
+**Figure S4**
+
+```{r FigS5, warning=FALSE,echo=F, fig.width=10,fig.height=8, message=F, fig.align="center", results=F}
+library("adegenet")
+library(vcfR)
+library("ade4")
+library(RColorBrewer)
+library(ggrepel)
+VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.5.recode.vcf")
+z <- vcfR2genlight(VCF)
+
+#get pops and label 
+popnames <- z@ind.names
+pops <- sapply(strsplit(popnames, '_'), function(x){paste0(x[1])})
+pops<- str_replace_all(pops, "RNL", "CFW")
+pop(z) = as.factor(pops) 
+ploidy(z) <- 2
+w <- tab(z, freq = TRUE, NA.method = "mean")
+
+#perform PCA
+w.pca <- dudi.pca(w, scannf = F, scale=F, nf=4)
+
+dudi.pca <- tibble(pc1=w.pca$li[,1], pc2=w.pca$li[,2], pc3=w.pca$li[,3], pc4=w.pca$li[,4], pop=pops)
+#PCA plot
+pc1per <- round(w.pca$eig[1]/sum(w.pca$eig) *100, 1)
+pc2per <- round(w.pca$eig[2]/sum(w.pca$eig) *100, 1)
+pc3per <- round(w.pca$eig[3]/sum(w.pca$eig) *100, 1)
+pc4per <- round(w.pca$eig[4]/sum(w.pca$eig) *100, 1)
+col <- funky(15)
+
+labels <- dudi.pca %>% distinct(pop, .keep_all=T)
+
+#current plot with pop colours at random
+p50 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-7, 6), ylim=c(-5.5,5.5)) +
+  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + ggtitle("p-15, r-50, missing 50%: 176 individuals, 5592 SNPs")+
+  theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=10),axis.title=element_text(size=12,face="bold"), 
+ plot.margin = unit(c(0.5,0.5,0.5,0.5), "lines"), plot.title=element_text(size=10, face="bold", hjust=0.5))
+p50 <- p50 + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
+
+VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf")
+z <- vcfR2genlight(VCF)
+
+#get pops and label 
+popnames <- z@ind.names
+pops <- sapply(strsplit(popnames, '_'), function(x){paste0(x[1])})
+pops<- str_replace_all(pops, "RNL", "CFW")
+pop(z) = as.factor(pops) 
+ploidy(z) <- 2
+w <- tab(z, freq = TRUE, NA.method = "mean")
+
+#perform PCA
+w.pca <- dudi.pca(w, scannf = F, scale=F, nf=4)
+
+dudi.pca <- tibble(pc1=w.pca$li[,1], pc2=w.pca$li[,2], pc3=w.pca$li[,3], pc4=w.pca$li[,4], pop=pops)
+#PCA plot
+pc1per <- round(w.pca$eig[1]/sum(w.pca$eig) *100, 1)
+pc2per <- round(w.pca$eig[2]/sum(w.pca$eig) *100, 1)
+pc3per <- round(w.pca$eig[3]/sum(w.pca$eig) *100, 1)
+pc4per <- round(w.pca$eig[4]/sum(w.pca$eig) *100, 1)
+col <- funky(15)
+
+labels <- dudi.pca %>% distinct(pop, .keep_all=T)
+
+#current plot with pop colours at random
+p75 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-7, 6), ylim=c(-5.5,5.5)) +
+  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + ggtitle("p-15, r-50, missing 25%: 148 individuals, 5592 SNPs")+
+  theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=10),axis.title=element_text(size=12,face="bold"), 
+        plot.margin = unit(c(0.5,0.5,0.5,0.5), "lines"), plot.title=element_text(size=10,face="bold",hjust=0.5))
+p75 <- p75 + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
+
+
+#-------------------------------------------
+#PCAs testing effects of missing loci
+
+VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r70.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf")
+z <- vcfR2genlight(VCF)
+
+#get pops and label 
+popnames <- z@ind.names
+pops <- sapply(strsplit(popnames, '_'), function(x){paste0(x[1])})
+pops<- str_replace_all(pops, "RNL", "CFW")
+pop(z) = as.factor(pops) 
+ploidy(z) <- 2
+w <- tab(z, freq = TRUE, NA.method = "mean")
+
+#perform PCA
+w.pca <- dudi.pca(w, scannf = F, scale=F, nf=4)
+
+dudi.pca <- tibble(pc1=w.pca$li[,1], pc2=w.pca$li[,2], pc3=w.pca$li[,3], pc4=w.pca$li[,4], pop=pops)
+#PCA plot
+pc1per <- round(w.pca$eig[1]/sum(w.pca$eig) *100, 1)
+pc2per <- round(w.pca$eig[2]/sum(w.pca$eig) *100, 1)
+pc3per <- round(w.pca$eig[3]/sum(w.pca$eig) *100, 1)
+pc4per <- round(w.pca$eig[4]/sum(w.pca$eig) *100, 1)
+col <- funky(15)
+
+labels <- dudi.pca %>% distinct(pop, .keep_all=T)
+
+#current plot with pop colours at random
+pr70 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-7, 6), ylim=c(-5.5,5.5)) +
+  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + ggtitle("p-15, r-70, missing 25%: 177 individuals, 742 SNPs")+
+  theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=10),axis.title=element_text(size=12,face="bold"), 
+        plot.margin = unit(c(0.5,0.5,0.5,0.5), "lines"),plot.title=element_text(size=10, face="bold",hjust=0.5))
+pr70 <- pr70 + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
+
+VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r60.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf")
+z <- vcfR2genlight(VCF)
+
+#get pops and label 
+popnames <- z@ind.names
+pops <- sapply(strsplit(popnames, '_'), function(x){paste0(x[1])})
+pops<- str_replace_all(pops, "RNL", "CFW")
+pop(z) = as.factor(pops) 
+ploidy(z) <- 2
+w <- tab(z, freq = TRUE, NA.method = "mean")
+
+#perform PCA
+w.pca <- dudi.pca(w, scannf = F, scale=F, nf=4)
+
+dudi.pca <- tibble(pc1=w.pca$li[,1], pc2=w.pca$li[,2], pc3=w.pca$li[,3], pc4=w.pca$li[,4], pop=pops)
+#PCA plot
+pc1per <- round(w.pca$eig[1]/sum(w.pca$eig) *100, 1)
+pc2per <- round(w.pca$eig[2]/sum(w.pca$eig) *100, 1)
+pc3per <- round(w.pca$eig[3]/sum(w.pca$eig) *100, 1)
+pc4per <- round(w.pca$eig[4]/sum(w.pca$eig) *100, 1)
+col <- funky(15)
+
+labels <- dudi.pca %>% distinct(pop, .keep_all=T)
+
+#current plot with pop colours at random
+pr60 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-7, 6), ylim=c(-5.5,5.5)) +
+  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + ggtitle("p-15, r-60, missing 25%: 163 individuals, 2203 SNPs")+
+  theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=10),axis.title=element_text(size=12,face="bold"), 
+        plot.margin = unit(c(0.5,0.5,0.5,0.5), "lines"),plot.title=element_text(size=10, face="bold",hjust=0.5))
+pr60 <- pr60 + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
+
+ggarrange(p50,p75, pr60, pr70, labels = c("A", "B", "C", "D"), ncol=2, nrow=2,font.label = list(size = 20, color = "black", face = "bold", family = NULL))
+
+```
+
+**Figure S5**
+
+```{r FigS6, warning=FALSE,echo=F, fig.width=10,fig.height=10, message=F, results=F, fig.align="center", cache=T}
+
+
+library(dartR)
+library(RColorBrewer)
+library(reshape2)
+library("ggplot2")
+
+
+VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf")
+z <- vcfR2genlight(VCF)
+popnames <- z@ind.names
+pops <- sapply(strsplit(popnames, '_'), function(x){paste0(x[1])})
+pops<- str_replace_all(pops, "RNL", "CFW")
+pop(z) = as.factor(pops) 
+ploidy(z) <- 2
+popnames <- z@ind.names 
+sex<- as.factor(sapply(strsplit(popnames, '_'), function(x){paste0(x[2])}))
+ind <- cbind( z@ind.names, pops, sex)
+colnames(ind)[1] <- "ind"
+z@other$ind.metrics <- ind
+
+
+#using dartR
+res<-gl.fst.pop(z, nboots = 1000, nclusters = 6)
+
+
+#plptting the Fst's
+fstMat <- as.matrix(as.dist(res$Fsts)) 
+# Use fst between variables as distance to reorder
+dd <- as.dist(fstMat)
+hc <- hclust(dd)
+fstMat <-fstMat[hc$order, hc$order]
+#reorder the p-value matrix in the same way
+pfstMat <- as.matrix(as.dist(res$Pvalues)) 
+pfstMat <-pfstMat[(rownames(fstMat)), (colnames(fstMat))]
+#reshape the fst matrix for use with ggplot2
+fstMat[lower.tri(fstMat)] <- NA
+diag(fstMat) <- NA
+pfstMat[lower.tri(pfstMat)] <- NA
+diag(pfstMat) <- NA
+
+fstmat <- melt(fstMat, na.rm = TRUE)
+names(fstmat) <- c("Pop1", "Pop2", "Fst")
+pfstmat <- melt(pfstMat, na.rm=T)
+fstmat$pval <- pfstmat$value
+
+# Create a ggheatmap
+ggheatmap <- ggplot(fstmat, aes(Pop2, Pop1, fill = Fst))+
+  geom_tile(color = "white")+
+  scale_fill_distiller(palette = "YlOrRd", direction = 1, name=expression("F"[st])) +
+  theme_minimal()+ # minimal theme
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1), axis.text.y = element_text(size=12))+
+  coord_fixed()
+
+
+ggheatmap + 
+  geom_text(aes(Pop2, Pop1, label = ifelse(pval < 0.05/105, round(Fst, 3), "") ), color = "black", size = 4) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_blank(),
+    axis.ticks = element_blank(),
+    legend.justification = c(1, 0),
+    legend.position = c(0.5, 0.7),
+    legend.direction = "horizontal",
+    legend.title = element_text( size = 12),
+    legend.text = element_text( size = 12))+
+  guides(fill = guide_colorbar(barwidth = 15, barheight = 2,
+                               title.position = "top", title.hjust = 0.5))
+
+
+
+```
+
+**Figure S6**
+
+```{r FigS7, warning=FALSE,echo=F, fig.width=14,fig.height=14, message=F, fig.align="center"}
+include_graphics("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts/FigS5.m4r50n5miss75-SimpleCoancestry_latest.pdf")
+```
+
+**Figure S7**
+
+```{r Table S4, message=F, warning=FALSE,echo=F}
+
+wolInf <- read.csv("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts/TableS4_Wolbachia_infection_short.csv")
+wolInf$Sample <- str_replace_all(wolInf$Sample, "_", "")
+options(scipen=999)
+#rename cols
+names(wolInf)[2] <- c("Total Reads")
+names(wolInf)[4:8] <- c(" % Total Reads Classified by Centrifuge", "% Total Reads Classified as Microbial (Archeae and Bacteria)", "% Total Reads Classified as Bacterial", "% Reads mapping to Wolbachia NCBI txid 77038" ,"% Reads mapping to other Wolbachia taxa" )  
+kable(wolInf, "latex", longtable=T, caption = "Title") %>% row_spec(0, bold=T) %>% column_spec(4:8, width="2 cm") %>%
+kable_styling(font_size = 8, full_width = F, latex_options = "repeat_header") %>% kableExtra::landscape()
+```
+
+```{r FigS8, warning=FALSE,echo=F, fig.width=11,fig.height=5, message=F, results=F, fig.align="center"}
+
+wolbachia <- read.csv("../../Wolbachia/Wolbachia_infection.csv", sep="\t")
+
+p5 <- ggplot(wolbachia, aes(x=log(percentage_classified_wolcbachia))) + geom_density(fill="grey80", alpha=0.5) + theme_bw() +
+  xlab(expression("Log"[2] *"(percentage of classified reads mapped Wolbachia)")) +geom_vline(xintercept = 0, linetype="dotted") +
+  theme(axis.text=element_text(size=10, face="bold"),axis.title=element_text(size=12,face="bold"), 
+        plot.margin = unit(c(0.5,.5,.5,.5), "lines"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank() )
+
+p6 <- ggplot(wolbachia, aes(x=log10(percentage_classified_wolcbachia), y=log10(n_reads))) + geom_point() + theme_bw()+
+  xlab(expression("Log"[10] *"(percentage of classified reads mapped to Wolbachia)")) + 
+  ylab(expression("Log"[10] *"(Total Reads)")) +
+  theme(axis.text=element_text(size=10, face="bold"),axis.title=element_text(size=12,face="bold"), 
+        plot.margin = unit(c(.5,.5,.5,.5), "lines"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank() )
+
+#pdf(file = "Testing123.pdf", width = 5, height = 11)
+ggarrange(p6,p5, labels = c("A", "B"), ncol=2, font.label = list(size = 20, color = "black", face = "bold", family = NULL))
+#dev.off()
+
+```
+
+**Figure S8**
+
+\pagebreak
+
+\newpage
+```{r Table S5, message=F, warning=FALSE,echo=F}
+
+bonf <- read.csv("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts/TablseS5_fishersExact_bonferroniPvalues.csv", na.strings = "0")
+names(bonf)[1] <- "x"
+
+bonf <- bonf %>% mutate (
+  BER=cell_spec(BER, "latex", bold=ifelse(BER<0.05, T,F)),
+  DGC=cell_spec(DGC, "latex", bold=ifelse(DGC<0.05, T,F)),
+  MLG=cell_spec(MLG, "latex", bold=ifelse(MLG<0.05, T,F)),
+  OBN=cell_spec(OBN, "latex", bold=ifelse(OBN<0.05, T,F)),
+  RHD=cell_spec(RHD, "latex", bold=ifelse(RHD<0.05, T,F))
+) 
+
+kable(bonf, "latex", escape=F, longtable=T,caption = "Title",booktabs=T ) %>%  row_spec(0, bold=T) %>% column_spec(1, bold=T) %>%
+kable_styling(font_size = 10, full_width = F)
+```
+
+\pagebreak
+
+
+\newpage
+
+```{r FigS9, warning=FALSE,echo=F, fig.width=10,fig.height=6, message=F, results=F, fig.align="center"}
+
+VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/Wolbachia//stacks_m4_M4_n4/populations.r50.p3/populations.snps.filter2.0.5.recode.vcf")
+z <- vcfR2genlight(VCF)
+
+#get pops and label 
+popnames <- z@ind.names
+pops <- sapply(strsplit(popnames, '_'), function(x){paste0(x[1])})
+pops<- str_replace_all(pops, "RNL", "CFW")
+pop(z) = as.factor(pops) 
+ploidy(z) <- 1
+w <- tab(z, freq = TRUE, NA.method = "mean")
+
+#perform PCA
+w.pca <- dudi.pca(w, scannf = F, scale=F, nf=4)
+
+dudi.pca <- tibble(pc1=w.pca$li[,1], pc2=w.pca$li[,2], pc3=w.pca$li[,3], pc4=w.pca$li[,4], pop=pops)
+#PCA plot
+pc1per <- round(w.pca$eig[1]/sum(w.pca$eig) *100, 1)
+pc2per <- round(w.pca$eig[2]/sum(w.pca$eig) *100, 1)
+pc3per <- round(w.pca$eig[3]/sum(w.pca$eig) *100, 1)
+pc4per <- round(w.pca$eig[4]/sum(w.pca$eig) *100, 1)
+col <- c("#A6CEE3", "#4F9F3B","#FDAC4F", "#D1AAB7", "#A99099","#B15928"  )
+
+labels <- dudi.pca %>% distinct(pop, .keep_all=T)
+
+#current plot with pop colours at random
+p <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point(size=2)  + scale_color_manual(name="Pop",values=col) + coord_fixed() +
+  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=12),axis.title=element_text(size=14,face="bold"), 
+                                                                                             plot.margin = unit(c(1,1,1,1), "lines"))
+p <- p + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
+p <- p + annotate("text", -4.1, 2, label="MLGm002", size=3)
+p <- p + annotate("text", -5.0, 0.9, label="OBNm110", size=3)
+
+print(p)
+
+```
+
+**Figure S9**
+
+\pagebreak
+
+
+\pagebreak
+
+
+```{r Table S6, message=F, warning=FALSE,echo=F}
+
+#read the table
+newCO1 <- read.csv("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts/TableS7_AdditionalCo1Sequencing.csv")
+#kable(sample_info')
+newCO1$Sample <- str_replace_all(newCO1$Sample, "_", "")
+names(newCO1)[3] <- "GenBank Accession No."
+kable(newCO1, "latex", longtable=T, caption = "Title",booktabs=T ) %>%  row_spec(0, bold=T) %>% column_spec(3, width="3 cm") %>%
+kable_styling(font_size = 10, full_width = F)
+
+```
+
+\pagebreak
+
+```{r FigS10, warning=FALSE,echo=F, fig.width=10,fig.height=10, message=F, results=F, fig.align="center"}
+#read in the saved trees in newick format
+wol_tree <- read.newick("woltree_more.nwk", node.label = "support")
+co1_tree <- read.newick("co1tree_more.nwk", node.label = "support")
+p1 <- ggtree(wol_tree)
+p2 <- ggtree(co1_tree)
+
+#add popinformation
+#get pop names
+#get pop names
+pops <- sapply(strsplit(wol_tree@phylo$tip.label, '_'), function(x){paste0(x[1])})
+wol <- as_tibble(wol_tree)
+dat <- tibble(label=as.character(wol_tree@phylo$tip.label), pop=pops) %>% mutate(geog=ifelse(pop=="BER" | pop =="TUL", "OH", "Main"))
+y <- full_join(wol, dat, by = 'label')
+wol_tree2 <- as.treedata(y)
+
+#see node labels
+
+#p1  + geom_label2(aes(subset=!isTip, label=node), size=3, color="darkred", alpha=0.5) 
+
+p1 <- ggtree(wol_tree2) + geom_text2(aes(subset =  (support > 70), label=support), hjust=-0.1)
+p1 <- p1 + geom_tippoint(aes(colour=pop, group=pop,size=geog),fill="gray80", shape=19, show.legend =TRUE ) + scale_size_manual(values=c(3.5, 1.5)) +
+  scale_colour_manual(values=c("#A6CEE3", "#4F9F3B","#FDAC4F", "#D1AAB7", "#A99099","#B15928"  ))
+#p1 + geom_treescale()
+
+#construct the CO1 tree
+pops <- sapply(strsplit(co1_tree@phylo$tip.label, '_'), function(x){paste0(x[1])})
+co1<- as_tibble(co1_tree)
+dat2 <- tibble(label=as.character(co1_tree@phylo$tip.label), pop=pops) %>% mutate(geog=ifelse(pop=="BER" | pop =="TUL", "OH", "Main"))
+y <- full_join(co1, dat2, by = 'label')
+co1_tree2 <- as.treedata(y)
+
+#see node labels
+
+#p2  + geom_label2(aes(subset=!isTip, label=node), size=3, color="darkred", alpha=0.5) 
+#make the tree
+p2 <- ggtree(co1_tree2)  + geom_text2(aes(subset =  (support > 97) & !(isTip), label=support), hjust=1.3,  vjust=-.5)
+p2 <- p2 + geom_tippoint(aes(colour=pop, group=pop,size=geog),fill="gray80", shape=19, show.legend =TRUE ) + scale_size_manual(values=c(3.5, 1.5)) +
+  scale_colour_manual(values=c("#A6CEE3", "#4F9F3B","#FDAC4F", "#D1AAB7", "#A99099","#B15928"  )) 
+
+#geom_hilight_encircle(node=33, fill='yellow',alpha=0.6) +
+#geom_hilight_encircle(node=46, fill='purple', alpha=0.6) 
+#p2 =revts(p2)
+
+d1 <- p2$data
+d2 <- p1$data
+
+## reverse x-axis and 
+## set offset to make the tree in the right hand side of the first tree
+d2$x <- max(d2$x) - d2$x + max(d1$x) + 1
+#manually adjust tree positions
+d2$x <-d2$x - 0.9
+
+
+pp <- p2  + geom_tree(data=d2)   + geom_text2(aes(subset =  (support > 70) & !(isTip), label=support), data=d2, hjust=-.3,  vjust=-.5)+
+  geom_tippoint(aes(size=geog, colour=pop, group=pop),data=d2,fill="gray80", shape=19, show.legend =TRUE )  #+
+#geom_hilight_encircle(node=33, data=d2,fill='yellow',alpha=0.6) +
+#geom_hilight_encircle(node=46, data=d2,fill='purple', alpha=0.6) 
+
+dd <- bind_rows(d1, d2) %>% 
+  filter(!is.na(label))
+
+pp <- pp + geom_line(aes(x, y, group=label), data=dd, color='grey', alpha=0.5)
+
+#save tree image
+#pdf(file = "FigS8.pdf", width = 9, height = 11)
+#annoatate tree
+pp + annotate("text", 0.34,36, hjust=0, size=6, label=expression(atop(italic("Wolbachia ") * "ddRAD Loci", "(37 loci, 74 SNPs)"))) +
+  annotate("text", 0.0,19, hjust=0, size=6, label=expression(atop("Mitochondrial CO1", "(16 SNPs)"))) +
+  geom_cladelabel(node=46, label="",offset=0.01,align=TRUE, colour="Purple" ,hjust=-0.1, barsize = 2, alpha=0.5)+ 
+  geom_cladelabel(node=33,label="",offset=0.01,align=TRUE, colour="Yellow", angle=90 ,hjust=-0.1, barsize = 2, alpha=0.5)+ 
+  #geom_cladelabel(node=46, label="Alicante-Sierra Nevada", offset=0.02,align=TRUE, color='black', angle=270, offset.text = 0.01)+ 
+  #theme(legend.position = c(0.1,0.85))
+  annotate("text", x= -0.01 ,y=55, hjust=0, size=6, label="Population", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=52, hjust=0, size=2, shape=19, colour="#A6CEE3", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=52, hjust=0, size=4, label="BER (Outer Hebrides)", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=49, hjust=0, size=2, shape=19, colour="#B15928", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=49, hjust=0, size=4, label="TUL (Outer Hebrides)", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=46, hjust=0, size=4, shape=19, colour="#4F9F3B", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=46, hjust=0, size=4, label="DGC (Northern Scotland mainland)", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=43, hjust=0, size=4, shape=19, colour="#FDAC4F", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=43, hjust=0, size=4, label="MLG (Northern Scotland mainland)", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=40, hjust=0, size=4, shape=19, colour="#D1AAB7", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=40, hjust=0, size=4, label="OBN (Northern Scotland mainland)", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=37, hjust=0, size=4, shape=19, colour="#A99099", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=37, hjust=0, size=4, label="RHD (Northern England)", Parse=TRUE) + 
+  annotate("text", x=0.23, y=8, angle=270, size =4, label="Iberia-Italy")+
+  annotate("text", x=0.23, y=23, angle=270, size =4, label="Alicante-Provence")+
+  annotate("segment", x = 0.29, xend = 0.29, y = 29, yend = 55, colour="black", size=2, alpha=0.5) +
+  annotate("segment", x = 0.29, xend = 0.29, y = 1, yend = 27, colour="black", size=2, alpha=0.5) +
+  annotate("text", x=0.28, y=41, angle=90, size =4, label=expression(italic("w")*"Ica1"))+
+  annotate("text", x=0.28, y=14, angle=90, size =4, label=expression(italic("w")*"Ica2"))+ 
+  geom_treescale(x=0.4, y=42, fontsize=5) 
+#dev.off()
+```
+
+**Figure S10**
+
+\pagebreak
+
+```{r Table S7, message=F, warning=FALSE,echo=F}
+
+#read the table
+sex <- read.csv("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts/TableS7_sex_specific.csv")
+
+#reorder and rename columns
+sex <- sex %>% select(c(markers, geno, geno.sex, 4,5,6))
+sex$geno.sex <- ifelse(sex$geno.sex=="f", "female", "male" )
+names(sex) <- c("Marker", "Genotype Class", "Phenotypic Sex", "Uninfected", "wIca1", "wIca2") 
+
+names(sex)[1] <- paste0(names(sex)[1],"*")
+
+kable(sex, "latex", caption = "Title", booktabs=T ) %>% 
+row_spec(c(3:4, 7:8, 11:12, 15:16, 19:20, 23:24, 27:28, 31:32, 35:36, 39:40)-1, extra_latex_after = "\\rowcolor{gray!6}") %>%
+column_spec(1:3, bold=T,width="2.5 cm") %>% collapse_rows(columns=1:3, latex_hline = "major", valign = "middle")  %>%
+footnote(symbol = "Prefix represents a unique RAD locus and the suffix represents position of a SNP on locus, 1 locus can have multiple SNPS", threeparttable = T)%>%
+kable_styling(font_size =10, full_width = F ) #%>% kableExtra::landscape()
+
+
+```
+

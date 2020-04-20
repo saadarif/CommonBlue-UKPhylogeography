@@ -12,9 +12,10 @@ library(pegas)
 library("factoextra")
 library(reshape2)
 library("ggplot2")
+library(tidyverse)
 
 #Descend into appropriate directory
-setwd('/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65/')
+setwd('/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new//populations.r50.p15_moh_0.65/')
 
 # Load the genotypes.
 #x = read.genepop('./populations.r50.p15_moh_0.65/populations.snps.gen')
@@ -72,21 +73,21 @@ Dgeo <- dist(as.matrix(cbind(coords[,1], coords[,2])))
 
 #######################################################
 #fwith vcf
- VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65/fastStructure/populations.snps.filter2.0.25.recode.singlesnp.vcf")
+VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m5_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf")
 z <- vcfR2genlight(VCF)
 
 #get pops
 popnames <- z@ind.names
 #popnames <- rownames(z@tab)
 pops <- as.factor(sapply(strsplit(popnames, '_'), function(x){paste0(x[1])}))
+pops<- str_replace_all(pops, "RNL", "CFW")
 pop(z) = pops
 ploidy(z) <- 2
 #add latlong information to genlight object
-latlong = as.data.frame( z@pop)
-latlong$lat <- NULL
-latlong$lon <- NULL
+latlong = data.frame( pop=z@pop, lat=numeric(length=length(z@pop)), lon=numeric(length=length(z@pop)))
 
 for (i in 1:dim(latlong)[1]){
+  print(i)
   latlong$lat[i] <- coords[rownames(coords)==latlong[i,1],1]
   latlong$lon[i] <- coords[rownames(coords)==latlong[i,1],2]
   
@@ -106,7 +107,7 @@ z@other$ind.metrics <- ind
 w <- tab(z, freq = TRUE, NA.method = "mean")
 
 #perform PCA
-w.pca <- dudi.pca(w, scannf = F, scale=F, nf=3)
+w.pca <- dudi.pca(w, scannf = F, scale=F, nf=4)
 
 #PCA plot
 col <- funky(15)
@@ -128,7 +129,7 @@ fviz_pca_var(w.pca,
 quantile(w.pca$c1[,1], probs=c(0.01, 0.99))
 markersPCA1 <-w.pca$c1[which(abs(w.pca$c1[,1]) >0.05),]
 markersPCA1[order(markersPCA1$CS1),]
-which(VCF@fix[,1]=="25996")
+which(VCF@fix[,1]=="21281")
 VCF@fix[VCF@fix[,1]=="25996",]
 # VCF@gt[2066,]
 #second axis
@@ -141,7 +142,7 @@ VCF@fix[VCF@fix[,1]=="23511",]
 #get genotypes in usable formate quick
 mat <- as.matrix(z)
 mat[,c("25996_6")]
-xtabs(~mat[,c("22789_29")]+pop(z))
+xtabs(~mat[,c("21281_19")]+pop(z))
 
 #w.pca$c1[which(abs(w.pca$c1[,1]) > 0.035
 toto <- summary(z)
@@ -163,11 +164,11 @@ title(xlab = "Genetic distance (proportion of loci that are different)")
 library(dartR)
 #drop pops wiht < 4 inds
 glnew3 <- gl.drop.pop(z, pop.list=c("RVS"))
-fd <- gl.fixed.diff(gl3new, tloc=0.05, test=TRUE, delta=0.02, reps=100, v=1 )
+fd <- gl.fixed.diff(glnew3, tloc=0.05, test=TRUE, delta=0.02, reps=100, v=1 )
 #########################################################
 #ibd with dartR
 library(dartR)
-ibdx <- gl.ibd(z, permutations=9999)
+ibdx <- gl.ibd(z, permutations=99)
 
 #reshape the dist matrices 
 library(reshape2)
@@ -177,18 +178,48 @@ df2 <- melt(as.matrix(ibdx$Dgeo), varnames = c("pop1", "pop2"))
 colnames(df2)[3] <- "dgeo"
 df$dgeo <- df2$dgeo
 df[which(df$dgen>0.1 & df$dgeo>13.0),]
-#remove any 0 values
-ibddf <- df[-(df$row==df$col),]
+#remove redudnacies
+ibddf <- df[as.numeric(df$pop2)>as.numeric(df$pop1),]
+#delete duplicate comparisons
+
+
+ibddf$comp <- paste0(ibddf$pop1, "-", ibddf$pop2)
 #plot
 plot(1, type="n", xlab="Log Dist", ylab=expression("F"[st]*"/"*"(1-F"[st]*")"), xlim=c(10.5, 15), ylim=c(0, 0.16))
 #plot bernerary and tul in same colours
-points(ibddf$dgeo[ibddf$col=="BER" ],ibddf$dgen[ibddf$col=="BER" ], pch=19,col="red" )
-points(ibddf$dgeo[ibddf$col=="TUL" ],ibddf$dgen[ ibddf$col=="TUL" ], pch=19,col="blue" )
-points(ibddf$dgeo[ibddf$col=="MLG" ],ibddf$dgen[ ibddf$col=="MLG" ], pch=19,col="Khaki" )
-points(ibddf$dgeo[ibddf$col=="OBN" ],ibddf$dgen[ ibddf$col=="OBN" ], pch=19,col="salmon" )
-points(ibddf$dgeo[ibddf$col=="DGC" ],ibddf$dgen[ ibddf$col=="DGC" ], pch=19,col="black" )
-#everything else
-points(ibddf$dgeo[ibddf$row!="TUL" & ibddf$col!="TUL" & ibddf$row!="BER" & ibddf$col!="BER"],ibddf$dgen[ibddf$row!="TUL" & ibddf$col!="TUL"& ibddf$row!="BER" & ibddf$col!="BER"], pch=19,col="grey80" )
+#plot all points first
+points(ibddf$dgeo, ibddf$dgen)
+abline(lm(ibddf$dgen~ibddf$dgeo))
+
+#hilight north south compairsons
+pattern=c("TUL", "MLG", "DGC", "OBN", "BER")
+pattern1=c("CFW", "MDC", "MMS", "PCP", "BMD", "ETB", "BWD", "FRN")
+
+points(ibddf$dgeo[grepl(paste(pattern,collapse="|"), ibddf$comp) &  grepl(paste(pattern1,collapse="|"), ibddf$comp)],ibddf$dgen[grepl(paste(pattern,collapse="|"), ibddf$comp) &  grepl(paste(pattern1,collapse="|"), ibddf$comp)], pch=19,col="black" )
+
+
+#highlight OH vs mainland comparisons
+
+pattern=c("MLG", "DGC", "OBN")
+pattern1= c("BER", "TUL")
+points(ibddf$dgeo[grepl(paste(pattern,collapse="|"), ibddf$comp) &  grepl(paste(pattern1,collapse="|"), ibddf$comp)],ibddf$dgen[grepl(paste(pattern,collapse="|"), ibddf$comp) &  grepl(paste(pattern1,collapse="|"), ibddf$comp)], pch=19,col="grey80" )
+
+points(ibddf$dgeo[ grepl("TUL", ibddf$comp) & grepl("BER", ibddf$comp)],ibddf$dgen[grepl("TUL", ibddf$comp) & grepl("BER", ibddf$comp)], pch=19,col="red" )
+
+
+
+#what happens to IBD without North-South Comparisons
+pattern=c("TUL", "MLG", "DGC", "OBN", "BER")
+pattern1=c("CFW", "MDC", "MMS", "PCP", "BMD", "ETB", "BWD", "FRN")
+ibddf$NS <- ifelse(grepl(paste(pattern,collapse="|"), ibddf$comp) &  grepl(paste(pattern1,collapse="|"), ibddf$comp), 1, 0)
+ibd_sub <- ibddf[ibddf$NS==0,]
+
+
+plot(1, type="n", xlab="Log Dist", ylab=expression("F"[st]*"/"*"(1-F"[st]*")"), xlim=c(10.5, 15), ylim=c(0, 0.16))
+#plot bernerary and tul in same colours
+#plot all points first
+points(ibd_sub$dgeo, ibd_sub$dgen)
+abline(lm(ibd_sub$dgen~ibd_sub$dgeo))
 
 #---------------------------------------------------
 #hierfstats
@@ -228,11 +259,10 @@ sexbias.test(hf[which((hf$pop != "TUL") & (hf$pop != "BER"))], z@other$ind.metri
 boxplot(aics ~  z@other$ind.metrics$sex[which((hf$pop != "TUL") & (hf$pop != "BER"))])
 
 #WC fst 
-fst_out <- boot.ppfst(dat=hf,diploid=TRUE)
+fst_out <- boot.ppfst(dat=hf,diploid=TRUE, nboot=1000)
 #using dartR
 res<-gl.fst.pop(z, nboots = 1000, nclusters = 2)
 
-#FSt for sex
 
 #plptting the Fst's
 fstMat <- as.matrix(as.dist(res$Fsts)) 
@@ -285,7 +315,7 @@ ggheatmap +
 
 
 #locus specific fst
-locusfst<-Fst(as.loci(geni), pop=pop(geni))TGCAGCCTCTCCCGACGTCTCCCGTGACCTCCCGAGCGCCGCTGTCCAGTCTCGTGTAGTGTTCGCTCGACTCCGCCGGCGCGGATGGACATTTT
+locusfst<-Fst(as.loci(geni), pop=pop(geni))
 
 
 
@@ -387,7 +417,7 @@ write.table(longlat, "/media/data_disk/PROJECTS/Saad/CommonBlue/eemsAnalysis/coo
 install.packages("pcadapt")
 library(pcadapt)
 
-filename <- read.pcadapt("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4/populations.r50.p15_moh_0.65/fastStructure/populations.snps.filter2.0.25.recode.singlesnp.vcf", type="vcf")
+filename <- read.pcadapt("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf", type="vcf")
 x <- pcadapt(filename, K=10)
 plot(x, option = "screeplot")
 x <- pcadapt(filename, K=3)
@@ -396,8 +426,8 @@ plot(x, option = "scores", i=1,j=3, pop = pops)
 #outlier detection using q-values
 library(qvalue)
 qval <- qvalue(x$pvalues)$qvalues
-alpha=0.05
-outliers <- which(qval < alpha)
+alpha=0.01
+outliersPCadapt <- which(qval < alpha)
 
 #--------------------------------------
 #pca for males only

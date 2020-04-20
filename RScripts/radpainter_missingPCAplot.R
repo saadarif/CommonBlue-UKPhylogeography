@@ -2,7 +2,7 @@
 
 #read in the missing data matrix from radpainter put
 
-setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/RADpainter2/miss75/")
+setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/RadPainter/miss75/")
 missmat =read.delim("haps_radpainter_reordered_missingnessMatrix.out")
 misspca <- prcomp(missmat[,2:dim(missmat)[2]], center = T)
 #get plate info

@@ -41,7 +41,7 @@ colnames(coords) <- c("lon", "lat")
 
 #calculating distance from latlon
 #Dgeo <- dist(as.matrix(cbind(coords[,1], coords[,2])))
-VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf")
+VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.5.recode.vcf")
 z <- vcfR2genlight(VCF)
 
 #get pops and label 
@@ -113,11 +113,11 @@ marker_results[marker_results$aic<10,]
 
 
 #see stats for marker
-grab=which(VCF@fix[,1] == "187698")
+grab=which(VCF@fix[,1] == "213425")
 #extract info
 gt<- sapply(strsplit(VCF@gt[grab[2],2:length(VCF@gt[grab[2],])], ':'), function(x){paste0(x[1])})
 gt[gt=="./."] <- NA
-dp <- as.numeric(sapply(strsplit(VCF@gt[grab[2],2:length(VCF@gt[grab[2],])], ':'), function(x){paste0(x[2])}))
+dp <- as.numeric(sapply(strsplit(VCF@gt[grab[1],2:length(VCF@gt[grab[1],])], ':'), function(x){paste0(x[2])}))
 ad <- (sapply(strsplit(VCF@gt[grab[1],2:length(VCF@gt[grab[1],])], ':'), function(x){paste0(x[3])}))
 ad[ad=="."] <- NA
 #get sex and pop
@@ -127,8 +127,8 @@ names(gt)<- str_replace_all(names(gt), "ETB_f_188", "ETB_m_188")
 names(gt)<- str_replace_all(names(gt), "PCP_f_161", "PCP_m_161")
 sex <- (sapply(strsplit(names(gt), '_'), function(x){paste0(x[2])}))
 geno <- data.frame( pop=pop, sex=sex, gt=gt, readepth=dp, alleledp=ad)
-averageref <- mean(as.numeric(sapply(strsplit(as.character(geno$alleledp[geno$sex=="f"]), ','), function(x){paste0(x[1])})),  na.rm=T)
-averagesnp <- mean(as.numeric(sapply(strsplit(as.character(geno$alleledp[geno$sex=="f"]), ','), function(x){paste0(x[2])})),  na.rm=T)
+#averageref <- mean(as.numeric(sapply(strsplit(as.character(geno$alleledp[geno$sex=="f"]), ','), function(x){paste0(x[1])})),  na.rm=T)
+#averagesnp <- mean(as.numeric(sapply(strsplit(as.character(geno$alleledp[geno$sex=="f"]), ','), function(x){paste0(x[2])})),  na.rm=T)
 xtabs(~geno$pop+geno$sex+geno$gt)
 
 #results
@@ -181,19 +181,146 @@ marker_results[marker_results$aic<10,]
 head(marker_results2[order(marker_results2$aic, decreasing = F),],10)
 
 #logistic regression the long way with PCAs as base
-#marker_results3=data.frame(locus=character(length=dim(mat)[2]), aic=double(length=dim(mat)[2]), lrt_pval=double(length=dim(mat)[2]), no_hets=integer(length=dim(mat)[2]), stringsAsFactors = F)
+marker_results3=data.frame(locus=character(length=dim(mat)[2]), aic=double(length=dim(mat)[2]), no_f_hets=integer(length=dim(mat)[2]),
+                           lrt_pval=double(length=dim(mat)[2]), no_m_hets=integer(length=dim(mat)[2]), no_genotypes=integer(length=dim(mat)[2]),
+                           n_snps=integer(length=dim(mat)[2]), pseudoR2= double(length=dim(mat)[2]),stringsAsFactors = F)
 
-#for (i in 1:dim(mat)[2]){
+for (i in 1:dim(mat)[2]){
   #remove missing vals
-#  miss = is.na(mat[,i])
-#  baseModel<- glm(z@other$ind.metrics$sex[!miss] ~ dudi.pca$pc1[!miss] + dudi.pca$pc3[!miss] +  dudi.pca$pc3[!miss] + dudi.pca$pc4[!miss], family=binomial(link=logit))
-#  logmod <- glm(z@other$ind.metrics$sex[!miss] ~  dudi.pca$pc1[!miss] + dudi.pca$pc3[!miss] +  dudi.pca$pc3[!miss] + dudi.pca$pc4[!miss]+ mat[!miss,i], family=binomial(link=logit))
-#  marker_results3$locus[i] <- colnames(mat)[i]
-#  marker_results3$aic[i] <-  logmod$aic
-#  x <- anova(baseModel, logmod, test="Chisq")
-#  marker_results3$lrt_pval[i] <- x$`Pr(>Chi)`[2]
-             
-#}
+  miss = is.na(mat[,i])
+  baseModel<- glm(z@other$ind.metrics$sex[!miss] ~ dudi.pca$pc1[!miss] + dudi.pca$pc2[!miss] , family=binomial(link=logit))
+  logmod <- glm(z@other$ind.metrics$sex[!miss] ~  dudi.pca$pc1[!miss] + dudi.pca$pc2[!miss]+ mat[!miss,i], family=binomial(link=logit))
+  marker_results3$locus[i] <- colnames(mat)[i]
+  marker_results3$aic[i] <-  logmod$aic
+  x <- anova(baseModel, logmod, test="Chisq")
+  marker_results3$lrt_pval[i] <- x$`Pr(>Chi)`[2]
+  
+  #for which loci are males always homozygotes
+  cross<-xtabs(~mat[,i]+z@other$ind.metrics$sex)
+  markers_d=as.factor(rownames(cross))
+  no_hets = sum(cross[2:dim(cross)[1],2])
+  marker_results3$no_m_hets[i] <-  no_hets
+  marker_results3$no_f_hets[i] <- sum(cross[2:dim(cross)[1],1])
+  #number of genotypes should be two
+  marker_results3$no_genotypes[i] <-  dim(cross)[1]
+  
+  #number of snps at locus
+  mark = str_split(colnames(mat)[i], "_")[[1]][1]
+  marker_results3$n_snps[i] <- length(which(VCF@fix[,1] == mark))
+  
+  #mcfadden PseudoR2
+  marker_results3$pseudoR2[i] <- pR2(logmod)[4]
+}
 
-#hist(-1*log10(marker_results3$lrt_pval))
+#plot(-1*log10(marker_results3$lrt_pval))
 #marker_results3[-1*log10(marker_results3$lrt_pval)>10,]
+
+#filter
+
+sexmarkers <- marker_results3 %>% filter(lrt_pval < 0.05/5592 & no_genotypes==2 & no_m_hets==0 ) #
+
+#keep only makers with consitent snps
+
+sexmarkers_s <- sexmarkers %>% filter(locus!="9544_25" & locus != "16136_81" & locus != "222601_60" & locus != "356589_17"  )
+
+#generate tidy table of sex-specific marker genotypes
+
+#get unique loci numbers
+uloci=unique(sapply(sexmarkers_s$locus, function(x){str_split(x, "_")[[1]][1]}))
+
+#Get infection information
+wolbachia <- read.csv("../../Wolbachia/Wolbachia_infection.csv", sep="\t")
+wol <- wolbachia %>% mutate(infected=ifelse(log(percentage_classified_wolcbachia)>1,"wIca2","Uninfected"))
+wol$infected[wol$POP=="BER"  | wol$POP=="TUL"] <- "wIca1"
+wol$infected[wol$X.sample=="MLG_f_010" | wol$X.sample=="MLG_m_002" | wol$X.sample=="OBN_m_110"] <- "wIca1"
+
+#correct erroneous female assignments
+wol$X.sample <- str_replace_all(wol$X.sample, "ETB_f_188", "ETB_m_188")
+wol$X.sample<- str_replace_all(wol$X.sample, "PCP_f_161", "PCP_m_161")
+
+#data frame to store data
+genotypes=data.frame()
+
+for (marker in uloci){
+  #get the locus
+  grab=which(VCF@fix[,1] == marker)
+  for (i in 1:length(grab)){
+    
+    gt<- sapply(strsplit(VCF@gt[grab[i],2:length(VCF@gt[grab[i],])], ':'), function(x){paste0(x[1])})
+    gt[gt=="./."] <- NA # missing genotypes
+    #get sex and pop
+    pop <- (sapply(strsplit(names(gt), '_'), function(x){paste0(x[1])}))
+    #replace error sex in ETB_f_188 and PCP
+    names(gt)<- str_replace_all(names(gt), "ETB_f_188", "ETB_m_188")
+    names(gt)<- str_replace_all(names(gt), "PCP_f_161", "PCP_m_161")
+    sex <- (sapply(strsplit(names(gt), '_'), function(x){paste0(x[2])}))
+    geno <- data.frame(names=names(gt), pop=pop, sex=sex, gt=gt)
+    #lexicogrpahical order data frame to it matches wiht the infection
+    geno <- geno[order(geno$names),]
+    geno$inf <- wol$infected[wol$X.sample %in% geno$names]
+    genoT <- xtabs(~geno$inf+geno$sex+geno$gt)
+    genotypes <- rbind(genotypes, genoT[,,1])
+    genotypes <- rbind(genotypes, genoT[,,2])
+    }
+}
+
+genotypes$geno <- rep(c(rep("Homozygote", 6), rep("Heterozygote", 6)), length(sexmarkers_s$locus))
+genotypes$markers <- as.vector(sapply(sexmarkers_s$locus, function(x) {rep(x,12)}))
+
+genoWide<- reshape(genotypes, idvar = c( "geno.sex",  "geno", "markers"), timevar="geno.inf", direction="wide")
+
+#grouping by Outer Hebrides, Northern Mainland Scotland and the rest for plotting
+#groupedGeno <- data.frame(Marker=genoWide$markers, M.Sex= genoWide$geno.sex, Geno= genoWide$geno, Outer_Hebrides=genoWide$Freq.BER+ genoWide$Freq.TUL, 
+#                          NScot_mainland= genoWide$Freq.DGC+genoWide$Freq.MLG+genoWide$Freq.OBN+genoWide$Freq.RHD,
+#                          Uninfected = genoWide$Freq.RVS+genoWide$Freq.BMD+genoWide$Freq.BWD+genoWide$Freq.ETB+genoWide$Freq.FRN+genoWide$Freq.MDC+genoWide$Freq.MMS+genoWide$Freq.PCP+genoWide$Freq.RNL)
+#convert to long format for saving
+#groupedGenolong <- gather(groupedGeno, Population, Counts, Outer_Hebrides:Uninfected , factor_key = TRUE)
+
+
+write.csv(genoWide, "TableS7_sex_specific.csv", row.names = F, quote=F)
+write.csv(genotypes, "sexmarkerdata.csv", row.names = F, quote=F)
+#rename and reorder columns
+
+
+
+#without accounting for pop stucture
+
+marker_results4=data.frame(locus=character(length=dim(mat)[2]), aic=double(length=dim(mat)[2]), 
+                           lrt_pval=double(length=dim(mat)[2]), no_m_hets=integer(length=dim(mat)[2]), no_f_hets=integer(length=dim(mat)[2]),
+                           no_genotypes=integer(length=dim(mat)[2]),
+                           n_snps=integer(length=dim(mat)[2]), pseudoR2= double(length=dim(mat)[2]),stringsAsFactors = F)
+
+for (i in 1:dim(mat)[2]){
+  #remove missing vals
+  miss = is.na(mat[,i])
+  baseModel<- glm(z@other$ind.metrics$sex[!miss] ~ 1 , family=binomial(link=logit))
+  logmod <- glm(z@other$ind.metrics$sex[!miss] ~ mat[!miss,i], family=binomial(link=logit))
+  marker_results4$locus[i] <- colnames(mat)[i]
+  marker_results4$aic[i] <-  logmod$aic
+  x <- anova(baseModel, logmod, test="Chisq")
+  marker_results4$lrt_pval[i] <- x$`Pr(>Chi)`[2]
+  
+  #for which loci are males always homozygotes
+  cross<-xtabs(~mat[,i]+z@other$ind.metrics$sex)
+  #markers_d=as.factor(rownames(cross))
+  no_hets = sum(cross[2:dim(cross)[1],2])
+  marker_results4$no_m_hets[i] <-  no_hets
+  
+  #number of genotypes should be two
+  marker_results4$no_genotypes[i] <-  dim(cross)[1]
+  
+  #number of snps at locus
+  mark = str_split(colnames(mat)[i], "_")[[1]][1]
+  marker_results4$n_snps[i] <- length(which(VCF@fix[,1] == mark))
+  
+  #mcfadden PseudoR2
+  marker_results4$pseudoR2[i] <- pR2(logmod)[4]
+}
+
+plot(-1*log10(marker_results4$lrt_pval))
+#marker_results3[-1*log10(marker_results3$lrt_pval)>10,]
+
+#filter
+
+sexmarkers4 <- marker_results4 %>% filter(lrt_pval < 0.05/5592 & no_genotypes==2 & no_hets==0 )
+

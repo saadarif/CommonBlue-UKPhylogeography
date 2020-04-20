@@ -24,10 +24,9 @@
 ##    You should have received a copy of the GNU General Public License
 ##    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-library(tidyverse)
 
 ### 1) EDIT THE FOLLOWING THREE LINES TO PROVIDE PATHS TO THE fineRADstructure OUTPUT 
-setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/RADpainter2/") ## The directory where the files are located
+setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/RadPainter/miss75/") ## The directory where the files are located
 chunkfile<-"haps_radpainter_reordered_chunks.out" ## RADpainter output file
 mcmcfile<-"haps_radpainter_reordered_chunks.mcmc.xml" ## finestructure mcmc file
 treefile<-"haps_radpainter_reordered_chunks.mcmcTree.xml" ## finestructure tree file

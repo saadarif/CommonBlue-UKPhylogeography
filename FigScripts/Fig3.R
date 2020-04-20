@@ -311,3 +311,45 @@ pdf(file = "FigS3.pdf", width = 14, height = 10)
 ggarrange(p50,p75, pr60, pr70, labels = c("A", "B", "C", "D"), ncol=2, nrow=2,font.label = list(size = 20, color = "black", face = "bold", family = NULL))
 dev.off()
 
+#-------------------------------
+#for different values of m
+VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m5_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf")
+z <- vcfR2genlight(VCF)
+
+#get pops and label 
+popnames <- z@ind.names
+pops <- sapply(strsplit(popnames, '_'), function(x){paste0(x[1])})
+pops<- str_replace_all(pops, "RNL", "CFW")
+pop(z) = as.factor(pops) 
+ploidy(z) <- 2
+w <- tab(z, freq = TRUE, NA.method = "mean")
+
+#perform PCA
+w.pca <- dudi.pca(w, scannf = F, scale=F, nf=4)
+
+dudi.pca <- tibble(pc1=w.pca$li[,1], pc2=w.pca$li[,2], pc3=w.pca$li[,3], pc4=w.pca$li[,4], pop=pops)
+#PCA plot
+pc1per <- round(w.pca$eig[1]/sum(w.pca$eig) *100, 1)
+pc2per <- round(w.pca$eig[2]/sum(w.pca$eig) *100, 1)
+pc3per <- round(w.pca$eig[3]/sum(w.pca$eig) *100, 1)
+pc4per <- round(w.pca$eig[4]/sum(w.pca$eig) *100, 1)
+col <- funky(15)
+
+labels <- dudi.pca %>% distinct(pop, .keep_all=T)
+
+#current plot with pop colours at random
+m5 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-6, 5), ylim=c(-5,5)) +
+  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + ggtitle("m:5-M:4-n:4, p-15, r-50%, 155 individuals, 2710 SNPs")+
+  theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=14, face="bold"),axis.title=element_text(size=14,face="bold"), 
+        plot.margin = unit(c(1,1,1,1), "lines"))
+m5 <- m5 + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
+
+pc34 <- dudi.pca %>% select(c(pc3:pop))
+
+labels34 <- pc34 %>% distinct(pop, .keep_all=T)
+p2 <- ggplot(pc34 ,aes(x=pc3, y=pc4, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed() +
+  xlab(paste0("PC3 ", pc3per, "%")) + ylab(paste0("PC4 ", pc4per, "%")) + theme_bw() + theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=14, face="bold"),axis.title=element_text(size=14,face="bold"), 
+                                                                                             plot.margin = unit(c(1,1,1,1), "lines"))
+p2 <- p2 + geom_label_repel(data=labels34, aes(x=pc3, y=pc4, label=pop), size=3)
+p2
+

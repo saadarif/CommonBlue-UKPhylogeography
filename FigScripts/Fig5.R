@@ -159,11 +159,11 @@ pp + annotate("text", 0.38,28, hjust=0, size=6, label=expression(atop(italic("Wo
   annotate("point", x= 0.0 ,y=24, hjust=0, size=4, shape=19, colour="#A99099", Parse=TRUE) +
   annotate("text", x= 0.02 ,y=24, hjust=0, size=4, label="RHD (Northern England)", Parse=TRUE) + 
   annotate("text", x=0.23, y=8, angle=270, size =4, label="Iberia-Italy")+
-  annotate("text", x=0.23, y=23, angle=270, size =4, label="Alicante-Sierra Nevada")+
+  annotate("text", x=0.23, y=23, angle=270, size =4, label="Alicante")+
   annotate("segment", x = 0.29, xend = 0.29, y = 21, yend = 42, colour="black", size=2, alpha=0.5) +
   annotate("segment", x = 0.29, xend = 0.29, y = 1, yend = 20, colour="black", size=2, alpha=0.5) +
-  annotate("text", x=0.28, y=30, angle=90, size =4, label="Strain A")+
-  annotate("text", x=0.28, y=10, angle=90, size =4, label="Strain B")+ 
+  annotate("text", x=0.28, y=30, angle=90, size =4, label=expression(italic("w")*"Ica2"))+
+  annotate("text", x=0.28, y=10, angle=90, size =4, label=expression(italic("w")*"Ica1"))+ 
   geom_treescale(x=0.45, y=36, fontsize=5) 
 dev.off()
 
@@ -312,10 +312,10 @@ pp + annotate("text", 0.34,36, hjust=0, size=6, label=expression(atop(italic("Wo
   annotate("point", x= 0.0 ,y=37, hjust=0, size=4, shape=19, colour="#A99099", Parse=TRUE) +
   annotate("text", x= 0.02 ,y=37, hjust=0, size=4, label="RHD (Northern England)", Parse=TRUE) + 
   annotate("text", x=0.23, y=8, angle=270, size =4, label="Iberia-Italy")+
-  annotate("text", x=0.23, y=23, angle=270, size =4, label="Alicante-Sierra Nevada")+
+  annotate("text", x=0.23, y=23, angle=270, size =4, label="Alicante")+
   annotate("segment", x = 0.29, xend = 0.29, y = 29, yend = 55, colour="black", size=2, alpha=0.5) +
   annotate("segment", x = 0.29, xend = 0.29, y = 1, yend = 27, colour="black", size=2, alpha=0.5) +
-  annotate("text", x=0.28, y=41, angle=90, size =4, label="Strain A")+
-  annotate("text", x=0.28, y=14, angle=90, size =4, label="Strain B")+ 
+  annotate("text", x=0.28, y=41, angle=90, size =4, label=expression(italic("w")*"Ica2"))+
+  annotate("text", x=0.28, y=14, angle=90, size =4, label=expression(italic("w")*"Ica1"))+ 
   geom_treescale(x=0.4, y=42, fontsize=5) 
 dev.off()

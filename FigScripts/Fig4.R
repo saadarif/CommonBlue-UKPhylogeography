@@ -179,7 +179,7 @@ dev.off()
 
 #supplemental figures histogramm abova
 p5 <- ggplot(wolbachia, aes(x=log(percentage_classified_wolcbachia))) + geom_density(fill="grey80", alpha=0.5) + theme_bw() +
-  xlab(expression("Log"[2] *"(percentage of classified reads mapped Wolbachia)")) +
+  xlab(expression("Log"[2] *"(percentage of classified reads mapped Wolbachia)")) +geom_vline(xintercept = 0, linetype="dotted") +
   theme(axis.text=element_text(size=14, face="bold"),axis.title=element_text(size=14,face="bold"), 
         plot.margin = unit(c(1,5,1,1), "lines"),
         panel.grid.major = element_blank(),
@@ -187,7 +187,7 @@ p5 <- ggplot(wolbachia, aes(x=log(percentage_classified_wolcbachia))) + geom_den
 
 p6 <- ggplot(wolbachia, aes(x=log10(percentage_classified_wolcbachia), y=log10(n_reads))) + geom_point() + theme_bw()+
   xlab(expression("Log"[10] *"(percentage of classified reads mapped to Wolbachia)")) + 
-  ylab(expression("Log"[10] *"(Total Reads)")) +
+  ylab(expression("Log"[10] *"(Total Reads)")) + 
   theme(axis.text=element_text(size=14, face="bold"),axis.title=element_text(size=14,face="bold"), 
         plot.margin = unit(c(1,5,1,1), "lines"),
         panel.grid.major = element_blank(),
@@ -204,4 +204,12 @@ wolbachia[log(wolbachia$percentage_classified_wolcbachia)>0,]
 #supplemental table stats
 wol1<- subset(wol,  POP=="BER" | POP=="TUL" |POP=="DGC" |POP=="MLG" |POP=="OBN" |POP=="RHD" )
 library(reporttools)
-pairwise.fisher.test(wol$infected, wol$POP,p.adjust.method = "bon")
+pairwise.fisher.test(wol1$infected, wol1$POP,p.adjust.method = "bon")
+
+#-----------------------------------------------------------------------------------------
+#correlation of percent wolbachia with average covrage of stack
+wolradstats <- read.csv("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts/TableS6_RADstats_Wolbachia_short.csv")
+names(wolbachia)[1] <- "Sample"
+corr <- inner_join(wolradstats, wolbachia,"Sample")
+ggplot(corr, aes(x=log(Average.Coverage), y=log(percentage_classified_wolcbachia))) + geom_point()+ theme_bw()
+cor.test(corr$Average.Coverage, corr$percentage_classified_wolcbachia, method="spearman")
