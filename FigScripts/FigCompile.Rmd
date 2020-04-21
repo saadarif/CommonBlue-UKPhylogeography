@@ -576,13 +576,12 @@ ggarrange(ibpm,p2, labels = c("A", "B"), nrow=2,font.label = list(size = 15, col
 
 \pagebreak
 
-```{r Fig5, warning=FALSE,echo=F, fig.width=8.5,fig.height=10, message=F, fig.align="center"}
+```{r Fig5, warning=FALSE,echo=F, fig.width=10,fig.height=10, message=F, fig.align="center", results=F}
 
 #no additional packages required
-
 #read in the saved trees in newick format
-wol_tree <- read.newick("woltree.nwk", node.label = "support")
-co1_tree <- read.newick("co1tree.nwk", node.label = "support")
+wol_tree <- read.newick("woltree_more.nwk", node.label = "support")
+co1_tree <- read.newick("co1tree_more.nwk", node.label = "support")
 p1 <- ggtree(wol_tree)
 p2 <- ggtree(co1_tree)
 
@@ -601,7 +600,7 @@ wol_tree2 <- as.treedata(y)
 
 p1 <- ggtree(wol_tree2) + geom_text2(aes(subset =  (support > 70), label=support), hjust=-0.1)
 p1 <- p1 + geom_tippoint(aes(colour=pop, group=pop,size=geog),fill="gray80", shape=19, show.legend =TRUE ) + scale_size_manual(values=c(3.5, 1.5)) +
-      scale_colour_manual(values=c("#A6CEE3", "#4F9F3B","#FDAC4F", "#D1AAB7", "#A99099","#B15928"  ))
+  scale_colour_manual(values=c("#A6CEE3", "#4F9F3B","#FDAC4F", "#D1AAB7", "#A99099","#B15928"  ))
 #p1 + geom_treescale()
 
 #construct the CO1 tree
@@ -619,8 +618,8 @@ p2 <- ggtree(co1_tree2)  + geom_text2(aes(subset =  (support > 97) & !(isTip), l
 p2 <- p2 + geom_tippoint(aes(colour=pop, group=pop,size=geog),fill="gray80", shape=19, show.legend =TRUE ) + scale_size_manual(values=c(3.5, 1.5)) +
   scale_colour_manual(values=c("#A6CEE3", "#4F9F3B","#FDAC4F", "#D1AAB7", "#A99099","#B15928"  )) 
 
-  #geom_hilight_encircle(node=33, fill='yellow',alpha=0.6) +
-  #geom_hilight_encircle(node=46, fill='purple', alpha=0.6) 
+#geom_hilight_encircle(node=33, fill='yellow',alpha=0.6) +
+#geom_hilight_encircle(node=46, fill='purple', alpha=0.6) 
 #p2 =revts(p2)
 
 d1 <- p2$data
@@ -633,47 +632,50 @@ d2$x <- max(d2$x) - d2$x + max(d1$x) + 1
 d2$x <-d2$x - 0.9
 
 
-pp <- p2  + geom_tree(data=d2)   + geom_text2(aes(subset =  (support > 97) & !(isTip), label=support), data=d2, hjust=-.3,  vjust=-.5)+
+pp <- p2  + geom_tree(data=d2)   + geom_text2(aes(subset =  (support > 70) & !(isTip), label=support), data=d2, hjust=-.3,  vjust=-.5)+
   geom_tippoint(aes(size=geog, colour=pop, group=pop),data=d2,fill="gray80", shape=19, show.legend =TRUE )  #+
-  #geom_hilight_encircle(node=33, data=d2,fill='yellow',alpha=0.6) +
-  #geom_hilight_encircle(node=46, data=d2,fill='purple', alpha=0.6) 
-  
+#geom_hilight_encircle(node=33, data=d2,fill='yellow',alpha=0.6) +
+#geom_hilight_encircle(node=46, data=d2,fill='purple', alpha=0.6) 
+
 dd <- bind_rows(d1, d2) %>% 
   filter(!is.na(label))
 
 pp <- pp + geom_line(aes(x, y, group=label), data=dd, color='grey', alpha=0.5)
 
+#save tree image
+#pdf(file = "FigS8.pdf", width = 9, height = 11)
 #annoatate tree
-pp + annotate("text", 0.38,28, hjust=0, size=6, label=expression(atop(italic("Wolbachia ") * "ddRAD Loci", "(37 loci, 68 SNPs)"))) +
+pp + annotate("text", 0.34,36, hjust=0, size=6, label=expression(atop(italic("Wolbachia ") * "ddRAD Loci", "(37 loci, 74 SNPs)"))) +
   annotate("text", 0.0,19, hjust=0, size=6, label=expression(atop("Mitochondrial CO1", "(16 SNPs)"))) +
-  geom_cladelabel(node=45, label="",offset=0.01,align=TRUE, colour="Purple" ,hjust=-0.1, barsize = 2, alpha=0.5)+ 
-  geom_cladelabel(node=32,label="",offset=0.01,align=TRUE, colour="Yellow", angle=90 ,hjust=-0.1, barsize = 2, alpha=0.5)+ 
+  geom_cladelabel(node=46, label="",offset=0.01,align=TRUE, colour="Purple" ,hjust=-0.1, barsize = 2, alpha=0.5)+ 
+  geom_cladelabel(node=33,label="",offset=0.01,align=TRUE, colour="Yellow", angle=90 ,hjust=-0.1, barsize = 2, alpha=0.5)+ 
   #geom_cladelabel(node=46, label="Alicante-Sierra Nevada", offset=0.02,align=TRUE, color='black', angle=270, offset.text = 0.01)+ 
   #theme(legend.position = c(0.1,0.85))
-  annotate("text", x= -0.01 ,y=42, hjust=0, size=6, label="Population", Parse=TRUE) +
-  annotate("point", x= 0.0 ,y=39, hjust=0, size=2, shape=19, colour="#A6CEE3", Parse=TRUE) +
-  annotate("text", x= 0.02 ,y=39, hjust=0, size=4, label="BER (Outer Hebrides)", Parse=TRUE) +
-  annotate("point", x= 0.0 ,y=36, hjust=0, size=2, shape=19, colour="#B15928", Parse=TRUE) +
-  annotate("text", x= 0.02 ,y=36, hjust=0, size=4, label="TUL (Outer Hebrides)", Parse=TRUE) +
-  annotate("point", x= 0.0 ,y=33, hjust=0, size=4, shape=19, colour="#4F9F3B", Parse=TRUE) +
-  annotate("text", x= 0.02 ,y=33, hjust=0, size=4, label="DGC (Northern Scotland mainland)", Parse=TRUE) +
-  annotate("point", x= 0.0 ,y=30, hjust=0, size=4, shape=19, colour="#FDAC4F", Parse=TRUE) +
-  annotate("text", x= 0.02 ,y=30, hjust=0, size=4, label="MLG (Northern Scotland mainland)", Parse=TRUE) +
-  annotate("point", x= 0.0 ,y=27, hjust=0, size=4, shape=19, colour="#D1AAB7", Parse=TRUE) +
-  annotate("text", x= 0.02 ,y=27, hjust=0, size=4, label="OBN (Northern Scotland mainland)", Parse=TRUE) +
-  annotate("point", x= 0.0 ,y=24, hjust=0, size=4, shape=19, colour="#A99099", Parse=TRUE) +
-  annotate("text", x= 0.02 ,y=24, hjust=0, size=4, label="RHD (Northern England)", Parse=TRUE) + 
+  annotate("text", x= -0.01 ,y=55, hjust=0, size=6, label="Population", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=52, hjust=0, size=2, shape=19, colour="#A6CEE3", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=52, hjust=0, size=4, label="BER (Outer Hebrides)", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=49, hjust=0, size=2, shape=19, colour="#B15928", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=49, hjust=0, size=4, label="TUL (Outer Hebrides)", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=46, hjust=0, size=4, shape=19, colour="#4F9F3B", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=46, hjust=0, size=4, label="DGC (Northern Scotland mainland)", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=43, hjust=0, size=4, shape=19, colour="#FDAC4F", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=43, hjust=0, size=4, label="MLG (Northern Scotland mainland)", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=40, hjust=0, size=4, shape=19, colour="#D1AAB7", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=40, hjust=0, size=4, label="OBN (Northern Scotland mainland)", Parse=TRUE) +
+  annotate("point", x= 0.0 ,y=37, hjust=0, size=4, shape=19, colour="#A99099", Parse=TRUE) +
+  annotate("text", x= 0.02 ,y=37, hjust=0, size=4, label="RHD (Northern England)", Parse=TRUE) + 
   annotate("text", x=0.23, y=8, angle=270, size =4, label="Iberia-Italy")+
   annotate("text", x=0.23, y=23, angle=270, size =4, label="Alicante-Provence")+
-  annotate("segment", x = 0.29, xend = 0.29, y = 21, yend = 42, colour="black", size=2, alpha=0.5) +
-  annotate("segment", x = 0.29, xend = 0.29, y = 1, yend = 20, colour="black", size=2, alpha=0.5) +
-  annotate("text", x=0.28, y=30, angle=90, size =4,  label=expression(italic("w")*"Ica1"))+
-  annotate("text", x=0.28, y=10, angle=90, size =4,  label=expression(italic("w")*"Ica2"))+ 
-  geom_treescale(x=0.45, y=36, fontsize=5) 
-
+  annotate("segment", x = 0.29, xend = 0.29, y = 29, yend = 55, colour="black", size=2, alpha=0.5) +
+  annotate("segment", x = 0.29, xend = 0.29, y = 1, yend = 27, colour="black", size=2, alpha=0.5) +
+  annotate("text", x=0.28, y=41, angle=90, size =4, label=expression(italic("w")*"Ica1"))+
+  annotate("text", x=0.28, y=14, angle=90, size =4, label=expression(italic("w")*"Ica2"))+ 
+  geom_treescale(x=0.4, y=42, fontsize=5) 
+#dev.off()
 ```
 
-**Figure 5** UPGMA clustering of mitochondrial CO1 fragments from 30 *Polyommatus icarus* individuals based on bitwise distance (left). UPGMA clustering of 68 concatenated SNPs from ddRADseq *Wolbachia* genotypes derived from reads mapping to Wolbachia from 42 infected individuals (right). Numbers on nodes represent bootstrap branch support values based on 1000 bootstrap replicates, values < 70% are not shown. Large circles represent individuals from mainland populations (DGC, MLG, OBN, RHD) and smaller circles represent individuals from the Outer Hebrides (BER, TUL). Lines between dendograms connect the CO1 haplotype and *Wolbachia* straind for the same individual. Scale bar reflects the proportion of loci that are different.
+
+**Figure 5** UPGMA clustering of mitochondrial CO1 fragments from 31 *Polyommatus icarus* individuals based on bitwise distance (left). UPGMA clustering of 74 concatenated SNPs from ddRADseq *Wolbachia* genotypes derived from reads mapping to Wolbachia from 55 infected individuals (right). Numbers on nodes represent bootstrap branch support values based on 1000 bootstrap replicates, values < 70% are not shown. Large circles represent individuals from mainland populations (DGC, MLG, OBN, RHD) and smaller circles represent individuals from the Outer Hebrides (BER, TUL). Lines between dendograms connect the CO1 haplotype and *Wolbachia* straind for the same individual. Scale bar reflects the proportion of loci that are different.
 
 \pagebreak
 
