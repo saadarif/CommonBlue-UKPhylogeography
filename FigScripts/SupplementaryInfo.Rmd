@@ -235,7 +235,7 @@ include_graphics("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts/T
 
 **Figure S4**
 
-```{r FigS5, warning=FALSE,echo=F, fig.width=10,fig.height=8, message=F, fig.align="center", results=F}
+```{r FigS5, warning=FALSE,echo=F, fig.width=10,fig.height=10, message=F, fig.align="center", results=F}
 library("adegenet")
 library(vcfR)
 library("ade4")
@@ -272,7 +272,7 @@ p50 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() 
  plot.margin = unit(c(0.5,0.5,0.5,0.5), "lines"), plot.title=element_text(size=10, face="bold", hjust=0.5))
 p50 <- p50 + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
 
-VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf")
+VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.singlesnp.vcf")
 z <- vcfR2genlight(VCF)
 
 #get pops and label 
@@ -297,8 +297,8 @@ col <- funky(15)
 labels <- dudi.pca %>% distinct(pop, .keep_all=T)
 
 #current plot with pop colours at random
-p75 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-7, 6), ylim=c(-5.5,5.5)) +
-  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + ggtitle("p-15, r-50, missing 25%: 148 individuals, 5592 SNPs")+
+p75 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-6, 6), ylim=c(-5.,5.5)) +
+  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + ggtitle("p-15, r-50, missing 25%: 148 individuals, 2824 Loci=SNPs")+
   theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=10),axis.title=element_text(size=12,face="bold"), 
         plot.margin = unit(c(0.5,0.5,0.5,0.5), "lines"), plot.title=element_text(size=10,face="bold",hjust=0.5))
 p75 <- p75 + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
@@ -332,7 +332,7 @@ col <- funky(15)
 labels <- dudi.pca %>% distinct(pop, .keep_all=T)
 
 #current plot with pop colours at random
-pr70 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-7, 6), ylim=c(-5.5,5.5)) +
+pr70 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-4, 4), ylim=c(-4,4)) +
   xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + ggtitle("p-15, r-70, missing 25%: 177 individuals, 742 SNPs")+
   theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=10),axis.title=element_text(size=12,face="bold"), 
         plot.margin = unit(c(0.5,0.5,0.5,0.5), "lines"),plot.title=element_text(size=10, face="bold",hjust=0.5))
@@ -363,7 +363,7 @@ col <- funky(15)
 labels <- dudi.pca %>% distinct(pop, .keep_all=T)
 
 #current plot with pop colours at random
-pr60 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-7, 6), ylim=c(-5.5,5.5)) +
+pr60 <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-5, 4), ylim=c(-4,4)) +
   xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + ggtitle("p-15, r-60, missing 25%: 163 individuals, 2203 SNPs")+
   theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=10),axis.title=element_text(size=12,face="bold"), 
         plot.margin = unit(c(0.5,0.5,0.5,0.5), "lines"),plot.title=element_text(size=10, face="bold",hjust=0.5))
@@ -375,41 +375,146 @@ ggarrange(p50,p75, pr60, pr70, labels = c("A", "B", "C", "D"), ncol=2, nrow=2,fo
 
 **Figure S5**
 
-```{r FigS6, warning=FALSE,echo=F, fig.width=10,fig.height=10, message=F, results=F, fig.align="center", cache=T}
+```{r FigS6, warning=FALSE,echo=F, fig.width=14,fig.height=14, message=F, fig.align="center"}
+include_graphics("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts/FigS5.m4r50n5miss75-SimpleCoancestry_latest.pdf")
+```
 
+**Figure S6**
+
+
+```{r FigS7, warning=FALSE,echo=F, fig.width=10,fig.height=12, message=F, results=F, fig.align="center", cache=T}
 
 library(dartR)
 library(RColorBrewer)
 library(reshape2)
-library("ggplot2")
 
+#perms for fst sig tests
+perms=9999
+
+
+MLG=c(-5.834874, 56.991962)# check field notes 16
+MDC=c(-3.843251, 53.295675) #12
+BER=c(-7.213534, 57.713854)#16
+TUL=c(-7.025334, 58.185530)# check field notes 16
+DGC=c(-4.016982, 57.878096)#14
+RVS=c(-2.596053, 56.023971)#6
+OBN=c(-5.482266, 56.433569)#14
+BWD=c(-3.898247, 50.579755) #devon 7
+FRN=c(1.982669, 44.157335) #Will's site in France 6
+PCP=c(-4.308992, 51.674219) #Pembrey county park 13
+ETB=c( 0.243747, 50.769187) #eastbourne 14
+MMS=c(1.255096, 52.168021) #martin's meadows in suffolk 14
+CFW=c(-0.281520, 53.254429) #should be Chamber's Farm wood CFW , lincolnshire 10
+RHD=c(-1.477433, 54.713907) #Raisby hill durham 13
+BMD=c(-1.125439, 51.782563) #Oxford 16
+
+
+coords <- rbind(MLG, MDC, BER, TUL, DGC, RVS, OBN, BWD, FRN, PCP, ETB, MMS, CFW, RHD, BMD)
+colnames(coords) <- c("lon", "lat")
 
 VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf")
 z <- vcfR2genlight(VCF)
 popnames <- z@ind.names
-pops <- sapply(strsplit(popnames, '_'), function(x){paste0(x[1])})
+pops <- as.factor(sapply(strsplit(popnames, '_'), function(x){paste0(x[1])}))
 pops<- str_replace_all(pops, "RNL", "CFW")
-pop(z) = as.factor(pops) 
+pop(z) = pops
 ploidy(z) <- 2
+latlong = data.frame( pop=z@pop, lat=numeric(length=length(z@pop)), lon=numeric(length=length(z@pop)))
+
+for (i in 1:dim(latlong)[1]){
+  print(i)
+  latlong$lat[i] <- coords[rownames(coords)==latlong[i,1],1]
+  latlong$lon[i] <- coords[rownames(coords)==latlong[i,1],2]
+  
+}
+
+colnames(latlong) <- c("pop","lat", "lon")
+#add lat long to gen light object
+z@other$latlong <- latlong[,2:3]
+#should now be able to use the dartR IBD function
+#add sex information as well
 popnames <- z@ind.names 
 sex<- as.factor(sapply(strsplit(popnames, '_'), function(x){paste0(x[2])}))
-ind <- cbind( z@ind.names, pops, sex)
+ind <- cbind( z@ind.names, pops, sex, latlong[,2:3])
 colnames(ind)[1] <- "ind"
 z@other$ind.metrics <- ind
 
+#read in Fsts and check outliers
+bayesFst <-  read.table("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/BayeScan/longrun_n50000_OD100_fst.txt", header = T)
+#filter 1% fdr
+outliers <- bayesFst[bayesFst$qval<0.01,]
+mat <- as.matrix(z)
+#use row ids of bayes outliers to select the columnss
+outliermat <- mat[,as.numeric(rownames(outliers))]
+#append marker information to bayescan outlier for sorting
+outliers$marker <- colnames(outliermat)
+
+zneut <- z[,!(z$loc.names %in% outliers$marker)]
+zout <- z[,outliers$marker]
 
 #using dartR
-res<-gl.fst.pop(z, nboots = 1000, nclusters = 6)
+#res<-gl.fst.pop(z, nboots = 1000, nclusters = 6)
 
 
 #plptting the Fst's
-fstMat <- as.matrix(as.dist(res$Fsts)) 
+#fstMat <- as.matrix(as.dist(res$Fsts)) 
+# Use fst between variables as distance to reorder
+#dd <- as.dist(fstMat)
+
+#hc <- hclust(dd)
+#fstMat <-fstMat[hc$order, hc$order]
+#reorder the p-value matrix in the same way
+#pfstMat <- as.matrix(as.dist(res$Pvalues)) 
+#pfstMat <-pfstMat[(rownames(fstMat)), (colnames(fstMat))]
+#reshape the fst matrix for use with ggplot2
+#fstMat[lower.tri(fstMat)] <- NA
+#diag(fstMat) <- NA
+#pfstMat[lower.tri(pfstMat)] <- NA
+#diag(pfstMat) <- NA
+
+#fstmat <- melt(fstMat, na.rm = TRUE)
+#names(fstmat) <- c("Pop1", "Pop2", "Fst")
+#pfstmat <- melt(pfstMat, na.rm=T)
+#fstmat$pval <- pfstmat$value
+
+# Create a ggheatmap
+#ggheatmap <- ggplot(fstmat, aes(Pop2, Pop1, fill = Fst))+
+#  geom_tile(color = "white")+
+#  scale_fill_distiller(palette = "YlOrRd", direction = 1, name=expression("F"[st])) +
+#  theme_minimal()+ # minimal theme
+#  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1), axis.text.y = element_text(size=12))+
+#  coord_fixed()
+
+
+#ggheatmap + 
+#  geom_text(aes(Pop2, Pop1, label = ifelse(pval < 0.05/105, round(Fst, 3), "") ), color = "black", size = 4) +
+#  theme(
+#    axis.title.x = element_blank(),
+#    axis.title.y = element_blank(),
+#    panel.grid.major = element_blank(),
+#    panel.border = element_blank(),
+ #   panel.background = element_blank(),
+#    axis.ticks = element_blank(),
+#    legend.justification = c(1, 0),
+#    legend.position = c(0.5, 0.7),
+#    legend.direction = "horizontal",
+#    legend.title = element_text( size = 12),
+#    legend.text = element_text( size = 12))+
+#  guides(fill = guide_colorbar(barwidth = 15, barheight = 2,
+#                               title.position = "top", title.hjust = 0.5))
+
+
+resn<-gl.fst.pop(zneut, nboots = perms, nclusters = 6)
+
+
+#plptting the Fst's
+fstMat <- as.matrix(as.dist(resn$Fsts)) 
 # Use fst between variables as distance to reorder
 dd <- as.dist(fstMat)
 hc <- hclust(dd)
 fstMat <-fstMat[hc$order, hc$order]
 #reorder the p-value matrix in the same way
-pfstMat <- as.matrix(as.dist(res$Pvalues)) 
+pfstMat <- as.matrix(as.dist(resn$Pvalues)) 
 pfstMat <-pfstMat[(rownames(fstMat)), (colnames(fstMat))]
 #reshape the fst matrix for use with ggplot2
 fstMat[lower.tri(fstMat)] <- NA
@@ -427,11 +532,11 @@ ggheatmap <- ggplot(fstmat, aes(Pop2, Pop1, fill = Fst))+
   geom_tile(color = "white")+
   scale_fill_distiller(palette = "YlOrRd", direction = 1, name=expression("F"[st])) +
   theme_minimal()+ # minimal theme
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1), axis.text.y = element_text(size=12))+
-  coord_fixed()
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1), axis.text.y = element_text(size=12))#+
+ # coord_fixed()
 
 
-ggheatmap + 
+neutFST <- ggheatmap + 
   geom_text(aes(Pop2, Pop1, label = ifelse(pval < 0.05/105, round(Fst, 3), "") ), color = "black", size = 4) +
   theme(
     axis.title.x = element_blank(),
@@ -444,21 +549,168 @@ ggheatmap +
     legend.position = c(0.5, 0.7),
     legend.direction = "horizontal",
     legend.title = element_text( size = 12),
-    legend.text = element_text( size = 12))+
+    legend.text = element_text( size = 12),
+    plot.margin = unit(c(1,1,1,1), "cm"))+
   guides(fill = guide_colorbar(barwidth = 15, barheight = 2,
                                title.position = "top", title.hjust = 0.5))
 
 
 
-```
+#-----
+#FST for outlier loci
+reso<-gl.fst.pop(zout, nboots = perms, nclusters = 6)
 
-**Figure S6**
 
-```{r FigS7, warning=FALSE,echo=F, fig.width=14,fig.height=14, message=F, fig.align="center"}
-include_graphics("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts/FigS5.m4r50n5miss75-SimpleCoancestry_latest.pdf")
+#plptting the Fst's
+fstMat <- as.matrix(as.dist(reso$Fsts)) 
+# Use fst between variables as distance to reorder
+dd <- as.dist(fstMat)
+hc <- hclust(dd)
+fstMat <-fstMat[hc$order, hc$order]
+#reorder the p-value matrix in the same way
+pfstMat <- as.matrix(as.dist(reso$Pvalues)) 
+pfstMat <-pfstMat[(rownames(fstMat)), (colnames(fstMat))]
+#reshape the fst matrix for use with ggplot2
+fstMat[lower.tri(fstMat)] <- NA
+diag(fstMat) <- NA
+pfstMat[lower.tri(pfstMat)] <- NA
+diag(pfstMat) <- NA
+
+fstmat <- melt(fstMat, na.rm = TRUE)
+names(fstmat) <- c("Pop1", "Pop2", "Fst")
+pfstmat <- melt(pfstMat, na.rm=T)
+fstmat$pval <- pfstmat$value
+
+# Create a ggheatmap
+ggheatmap <- ggplot(fstmat, aes(Pop2, Pop1, fill = Fst))+
+  geom_tile(color = "white")+
+  scale_fill_distiller(palette = "YlOrRd", direction = 1, name=expression("F"[st])) +
+  theme_minimal()+ # minimal theme
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 12, hjust = 1), axis.text.y = element_text(size=12))#+
+  #coord_fixed()
+
+
+outlierFST <- ggheatmap + 
+  geom_text(aes(Pop2, Pop1, label = ifelse(pval < 0.05/105, round(Fst, 3), "") ), color = "black", size = 4) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_blank(),
+    axis.ticks = element_blank(),
+    legend.justification = c(1, 0),
+    legend.position = c(0.5, 0.7),
+    legend.direction = "horizontal",
+    legend.title = element_text( size = 12),
+    legend.text = element_text( size = 12),
+   plot.margin = unit(c(1,1,1,1), "cm") )+
+  guides(fill = guide_colorbar(barwidth = 15, barheight = 2,
+                               title.position = "top", title.hjust = 0.5)) 
+
+
+ggarrange(neutFST, outlierFST, labels = c("A", "B"),nrow = 2,font.label = list(size = 15, color = "black", face = "bold", family = NULL))
+
 ```
 
 **Figure S7**
+
+```{r FigSx, warning=FALSE,echo=F, fig.width=12,fig.height=6, message=F, results=F, fig.align="center"}
+library(dartR)
+perms=2
+ibdneut <- gl.ibd(zneut, permutations=perms, plot = F)
+
+#reshape the dist matrices 
+library(reshape2)
+df <- melt(as.matrix(ibdneut$Dgen), varnames = c("pop1", "pop2"))
+colnames(df)[3] <- "dgen"
+df2 <- melt(as.matrix(ibdneut$Dgeo), varnames = c("pop1", "pop2"))
+colnames(df2)[3] <- "dgeo"
+df$dgeo <- df2$dgeo
+#remove redudnacies
+ibneutdf <- df[as.numeric(df$pop2)>as.numeric(df$pop1),]
+#delete duplicate comparisons
+ibneutdf$comp <- paste0(ibneutdf$pop1, "-", ibneutdf$pop2)
+#add columms for comparisons
+#north vs south
+pattern=c("TUL", "MLG", "DGC", "OBN", "BER")
+pattern1=c("CFW", "MDC", "MMS", "PCP", "BMD", "ETB", "BWD")
+ibneutdf$region <- ifelse(grepl(paste(pattern,collapse="|"), ibneutdf$comp) &  grepl(paste(pattern1,collapse="|"), ibneutdf$comp),"North vs. South", "Within")
+#highlight OH vs mainland comparisons
+
+
+#French comparisons 
+ibneutdf$region[grepl("FRN", ibneutdf$comp)] <-  "France vs. the Rest"
+
+#----
+
+ibdout <- gl.ibd(zout, permutations=perms, plot=F)
+
+#reshape the dist matrices 
+df <- melt(as.matrix(ibdout$Dgen), varnames = c("pop1", "pop2"))
+colnames(df)[3] <- "dgen"
+df2 <- melt(as.matrix(ibdout$Dgeo), varnames = c("pop1", "pop2"))
+colnames(df2)[3] <- "dgeo"
+df$dgeo <- df2$dgeo
+df[which(df$dgen>0.1 & df$dgeo>13.0),]
+#remove redudnacies
+iboutdf <- df[as.numeric(df$pop2)>as.numeric(df$pop1),]
+#delete duplicate comparisons
+iboutdf$comp <- paste0(iboutdf$pop1, "-", iboutdf$pop2)
+iboutdf$region <- ibneutdf$region
+
+
+#join the two dfs 
+ibneutdf$data <- "neutral"
+iboutdf$data <- "outlier"
+ibd <- rbind(ibneutdf, iboutdf)
+
+neutfst <- ibd%>% filter(data=="neutral")
+
+neut <- ggplot(neutfst, aes(x=dgeo, y=dgen,  shape=region)) + theme_bw() +
+  xlab("Log Distance")+ ylab(expression("F"[st]*"/"*"(1-F"[st]*")"))+ ylim(c(-.01,.15)) +
+  labs( shape="Regional Comparison")+ scale_shape_manual(values=c(15,16,17))+
+  theme(legend.position=c(0.2,0.75),axis.text=element_text(size=12),axis.title=element_text(size=14,face="bold"), 
+        plot.margin = unit(c(1,1,1,1), "lines"),
+        legend.title = element_text( size = 14),
+        legend.text = element_text( size = 12),
+        legend.spacing.y = unit(-0.5, "mm"),
+        legend.key.size = unit(2,"line"),
+        #legend.text = element_text(margin = margin(r = 8, unit = "pt")),
+        #legend.box.background = element_rect(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) + geom_density_2d(na.rm=T, size=0.1) + #stat_density_2d(geom="polygon", aes(fill= ..level..)) +
+        geom_point(size=3, alpha=0.5, colour="black")  +
+        geom_smooth(method="lm", aes(group=1), se=F, colour="black", na.rm=T, size=.6)
+
+outfst <- ibd%>% filter(data=="outlier")
+
+
+outl <- ggplot(outfst, aes(x=dgeo, y=dgen,  shape=region)) + theme_bw() +
+  xlab("Log Distance")+ ylab(expression("F"[st]*"/"*"(1-F"[st]*")"))+ ylim(c(-.01,1.3)) +
+  labs( shape="Regional Comparison")+ scale_shape_manual(values=c(15,16,17))+
+  theme(legend.position=c(0.2,0.75),axis.text=element_text(size=12),axis.title=element_text(size=14,face="bold"), 
+        plot.margin = unit(c(1,1,1,1), "lines"),
+        legend.title = element_text( size = 14),
+        legend.text = element_text( size = 12),
+        legend.spacing.y = unit(-0.5, "mm"),
+        legend.key.size = unit(2,"line"),
+        #legend.text = element_text(margin = margin(r = 8, unit = "pt")),
+        #legend.box.background = element_rect(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) + geom_density_2d(na.rm=T, size=0.1) + #stat_density_2d(geom="polygon", aes(fill= ..level..)) +
+        geom_point(size=3, alpha=0.5, colour="black")  +
+        geom_smooth(method="lm", aes(group=1), se=F, colour="black", na.rm=T, size=.6)
+
+
+ggarrange(neut, outl, labels = c("A", "B"),font.label = list(size = 20, color = "black", face = "bold", family = NULL), legend="bottom", common.legend = T) 
+
+
+
+```
+
+**Figure Sx**
+
 
 ```{r Table S4, message=F, warning=FALSE,echo=F}
 

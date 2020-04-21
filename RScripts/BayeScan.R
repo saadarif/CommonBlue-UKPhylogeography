@@ -115,10 +115,12 @@ library(maps)
 UK <- map_data("world") %>% filter(region=="UK")
 coords <- as.data.frame(coords)
 p1 <- ggplot() +
-  geom_polygon(data = UK, aes(x=long, y = lat, group=group), fill="grey",alpha=0.3) +  
-  geom_label(data=coords, aes(x=lon, y=lat, label=rownames(coords)), size=2.5, hjust = 0,label.size = 0.15 ) + #scale_color_gradient(low = "red", high = "blue", name="Latitude", guide="none")+
+  geom_polygon(data = UK, aes(x=long, y = lat, group=group), colour="grey",alpha=0.1) +  
+  geom_label(data=coords, aes(x=lon, y=lat, label=rownames(coords)), size=3, hjust = 0,label.size =NA, fill=NA) + #scale_color_gradient(low = "red", high = "blue", name="Latitude", guide="none")+
   theme_void() + ylim(50,59) + xlim(NA,3) + coord_map() 
 
+map_grob <- ggplotGrob(p1)
+pall <- pall + annotation_custom(grob=map_grob, xmin=-6, xmax=2, ymin=-1, ymax=6.5)
 #save the plots
 vp <- viewport(width = .4, height = .4,  x = 0.49, y = 0.72)
 print(pall)
@@ -352,7 +354,7 @@ outlierFST <- ggheatmap +
 
 #------------------------------------------------------------------------------------------------------------
 #IBD for neutral and outlier loci
-ibdneut <- gl.ibd(zneut, permutations=9999)
+ibdneut <- gl.ibd(zneut, permutations=9999, plot = F)
 
 #reshape the dist matrices 
 library(reshape2)
@@ -369,7 +371,7 @@ ibneutdf$comp <- paste0(ibneutdf$pop1, "-", ibneutdf$pop2)
 #north vs south
 pattern=c("TUL", "MLG", "DGC", "OBN", "BER")
 pattern1=c("CFW", "MDC", "MMS", "PCP", "BMD", "ETB", "BWD")
-ibneutdf$region <- ifelse(grepl(paste(pattern,collapse="|"), ibneutdf$comp) &  grepl(paste(pattern1,collapse="|"), ibneutdf$comp),"N-S", "other")
+ibneutdf$region <- ifelse(grepl(paste(pattern,collapse="|"), ibneutdf$comp) &  grepl(paste(pattern1,collapse="|"), ibneutdf$comp),"North vs. South", "other")
 #highlight OH vs mainland comparisons
 
 #pattern=c("MLG", "DGC", "OBN")
@@ -377,14 +379,14 @@ ibneutdf$region <- ifelse(grepl(paste(pattern,collapse="|"), ibneutdf$comp) &  g
 #ibneutdf$region[grepl(paste(pattern,collapse="|"), ibneutdf$comp) &  grepl(paste(pattern1,collapse="|"), ibneutdf$comp)] <-  "OH-Main"
 
 #French comparisons 
-ibneutdf$region[grepl("FRN", ibneutdf$comp)] <-  "France"
+ibneutdf$region[grepl("FRN", ibneutdf$comp)] <-  "France vs. the Rest"
 
 #plot
-plot(1, type="n", xlab="Log Dist", ylab=expression("F"[st]*"/"*"(1-F"[st]*")"), xlim=c(10.5, 15), ylim=c(0, 0.16))
+#plot(1, type="n", xlab="Log Dist", ylab=expression("F"[st]*"/"*"(1-F"[st]*")"), xlim=c(10.5, 15), ylim=c(0, 0.16))
 #plot bernerary and tul in same colours
 #plot all points first
-points(ibneutdf$dgeo, ibneutdf$dgen)
-abline(lm(ibneutdf$dgen~ibneutdf$dgeo))
+#points(ibneutdf$dgeo, ibneutdf$dgen)
+#abline(lm(ibneutdf$dgen~ibneutdf$dgeo))
 
 #hilight north south compairsons
 pattern=c("TUL", "MLG", "DGC", "OBN", "BER")
@@ -404,7 +406,7 @@ points(ibneutdf$dgeo[ grepl("TUL", ibneutdf$comp) & grepl("BER", ibneutdf$comp)]
 
 
 #----
-ibdout <- gl.ibd(zout, permutations=9999)
+ibdout <- gl.ibd(zout, permutations=9999, plot=F)
 
 #reshape the dist matrices 
 df <- melt(as.matrix(ibdout$Dgen), varnames = c("pop1", "pop2"))
@@ -425,11 +427,13 @@ ibneutdf$data <- "neutral"
 iboutdf$data <- "outlier"
 ibd <- rbind(ibneutdf, iboutdf)
 
-ggplot(ibd, aes(x=dgeo, y=dgen, group=data, shape=region, colour=data)) + geom_point(size=2.5, alpha=0.7) + theme_bw() + geom_smooth(method="lm", se=F)+
-    xlab("Log Dist")+ ylab(expression("F"[st]*"/"*"(1-F"[st]*")"))+ ylim(c(-.1,1.3)) + scale_colour_manual(values=c("black", "grey")) +
-  theme(legend.position=c(0.2,0.75),axis.text=element_text(size=10),axis.title=element_text(size=12,face="bold"), 
+
+ibdplots <- ggplot(ibd, aes(x=dgeo, y=dgen, group=data, shape=region, colour=data)) + geom_point(size=3, alpha=0.6) + theme_bw() + geom_smooth(method="lm", se=F, weight=0.5)+
+    xlab("Log Distance")+ ylab(expression("F"[st]*"/"*"(1-F"[st]*")"))+ ylim(c(-.1,1.3)) + scale_colour_manual(values=c("grey", "black")) +
+    labs(colour="SNP Type", shape="Regional Comparison")+
+  theme(legend.position=c(0.2,0.75),axis.text=element_text(size=12),axis.title=element_text(size=14,face="bold"), 
         plot.margin = unit(c(1,1,1,1), "lines"),
-        legend.title = element_text( size = 11),
+        legend.title = element_text( size = 10),
         #legend.text = element_text( size = 9),
         #legend.spacing.y = unit(-0.5, "mm"),
         #legend.key.size = unit(2,"line"),
@@ -440,6 +444,8 @@ ggplot(ibd, aes(x=dgeo, y=dgen, group=data, shape=region, colour=data)) + geom_p
 
 
 
+ggarrange(pall,pneut, pout, ibdplots, labels = c("A", "B", "C", "D"), ncol=2, nrow=2,font.label = list(size = 20, color = "black", face = "bold", family = NULL)) %>% 
+  ggexport(filename="test.pdf", height =12, width=16)
 
 
 

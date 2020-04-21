@@ -198,7 +198,7 @@ print(p10, vp = vp)
 
 \pagebreak
 
-```{r Fig3, warning=FALSE, echo=F, fig.width=7,fig.height=7, message=F, results=F, fig.align="centre"}
+```{r Fig3, warning=FALSE, echo=F, fig.width=12,fig.height=12, message=F, results=F, fig.align="centre"}
 
 #load additional packages
 library("adegenet")
@@ -206,30 +206,97 @@ library(vcfR)
 library("ade4")
 library(RColorBrewer)
 library(ggrepel)
+library(dartR)
+library(ggpubr)
 
 
-VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.singlesnp.vcf")
-z <- vcfR2genlight(VCF)
+
+#VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.singlesnp.vcf")
+#z <- vcfR2genlight(VCF)
 
 #get pops and label 
-popnames <- z@ind.names
-pops <- sapply(strsplit(popnames, '_'), function(x){paste0(x[1])})
-pops<- str_replace_all(pops, "RNL", "CFW")
-pop(z) = as.factor(pops) 
-ploidy(z) <- 2
+#popnames <- z@ind.names
+#pops <- sapply(strsplit(popnames, '_'), function(x){paste0(x[1])})
+#pops<- str_replace_all(pops, "RNL", "CFW")
+#pop(z) = as.factor(pops) 
+#ploidy(z) <- 2
 
 #add latlong information to genlight object
-latlong = as.data.frame( z@pop)
-latlong$lat <- NULL
-latlong$lon <- NULL
+#latlong = as.data.frame( z@pop)
+#latlong$lat <- NULL
+#latlong$lon <- NULL
+
+#for (i in 1:dim(latlong)[1]){
+#  latlong$lat[i] <- coords[coords$POP==latlong[i,1],2]
+#  latlong$lon[i] <- coords[coords$POP==latlong[i,1],3]
+  
+#}
+
+#names(latlong) <- c("POP","lat", "lon")
+#add lat long to gen light object
+#z@other$latlong <- latlong[,2:3]
+#should now be able to use the dartR IBD function
+#add sex information as well
+#popnames <- z@ind.names 
+#sex<- as.factor(sapply(strsplit(popnames, '_'), function(x){paste0(x[2])}))
+#ind <- cbind( z@ind.names, pops, sex, latlong[,2:3])
+#colnames(ind)[1] <- "ind"
+#z@other$ind.metrics <- ind
+#w <- tab(z, freq = TRUE, NA.method = "mean")
+
+#perform PCA
+#w.pca <- dudi.pca(w, scannf = F, scale=F, nf=4)
+
+#dudi.pca <- tibble(pc1=w.pca$li[,1], pc2=w.pca$li[,2], pc3=w.pca$li[,3], pc4=w.pca$li[,4],lat=z@other$latlong[,2], pop=pops)
+#PCA plot
+#pc1per <- round(w.pca$eig[1]/sum(w.pca$eig) *100, 1)
+#pc2per <- round(w.pca$eig[2]/sum(w.pca$eig) *100, 1)
+#pc3per <- round(w.pca$eig[3]/sum(w.pca$eig) *100, 1)
+#pc4per <- round(w.pca$eig[4]/sum(w.pca$eig) *100, 1)
+#col <- funky(15)
+
+#labels <- dudi.pca %>% distinct(pop, .keep_all=T)
+
+#current plot with pop colours at random
+#p <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + #coord_fixed(xlim=c(-6, 5), ylim=c(-4.5,5)) +
+#  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + theme(legend.position = "none",panel.grid = element_blank(), #axis.text=element_text(size=12),axis.title=element_text(size=14,face="bold"), 
+                                                                                           #  plot.margin = unit(c(1,1,1,1), "lines"))
+#p <- p + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
+#add map
+
+#Get the region
+#UK <- map_data("world") %>% filter(region=="UK")
+
+#p1 <- ggplot() +
+#  geom_polygon(data = UK, aes(x=long, y = lat, group=group), fill="grey",alpha=0.3) +  
+#  geom_label(data=coords, aes(x=lon, y=lat, label=POP), size=2.5, hjust = 0,label.size = 0.15 ) + #scale_color_gradient(low = "red", high = "blue", name="Latitude", guide="none")+
+#  theme_void() + ylim(50,59) + xlim(NA,3) + coord_map() 
+
+#save the plots
+#vp <- viewport(width = .4, height = .4,  x = 0.49, y = 0.72)
+#print(p)
+#print(p1, vp = vp)
+
+
+#----------------------------------------------------------------------------
+#new figure 3
+VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf")
+z <- vcfR2genlight(VCF)
+popnames <- z@ind.names
+pops <- as.factor(sapply(strsplit(popnames, '_'), function(x){paste0(x[1])}))
+pops<- str_replace_all(pops, "RNL", "CFW")
+pop(z) = pops
+ploidy(z) <- 2
+latlong = data.frame( pop=z@pop, lat=numeric(length=length(z@pop)), lon=numeric(length=length(z@pop)))
 
 for (i in 1:dim(latlong)[1]){
+  print(i)
   latlong$lat[i] <- coords[coords$POP==latlong[i,1],2]
   latlong$lon[i] <- coords[coords$POP==latlong[i,1],3]
   
 }
 
-names(latlong) <- c("POP","lat", "lon")
+colnames(latlong) <- c("pop","lat", "lon")
 #add lat long to gen light object
 z@other$latlong <- latlong[,2:3]
 #should now be able to use the dartR IBD function
@@ -255,32 +322,149 @@ col <- funky(15)
 labels <- dudi.pca %>% distinct(pop, .keep_all=T)
 
 #current plot with pop colours at random
-p <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-6, 5), ylim=c(-4.5,5)) +
+p <- ggplot(dudi.pca,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-7, 6), ylim=c(-6.5,6)) +
   xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=12),axis.title=element_text(size=14,face="bold"), 
                                                                                              plot.margin = unit(c(1,1,1,1), "lines"))
-p <- p + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
-#add map
+pall <- p + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
 
-#Get the region
+library(maps)
+
 UK <- map_data("world") %>% filter(region=="UK")
-
+coords <- as.data.frame(coords)
 p1 <- ggplot() +
-  geom_polygon(data = UK, aes(x=long, y = lat, group=group), fill="grey",alpha=0.3) +  
-  geom_label(data=coords, aes(x=lon, y=lat, label=POP), size=2.5, hjust = 0,label.size = 0.15 ) + #scale_color_gradient(low = "red", high = "blue", name="Latitude", guide="none")+
+  geom_polygon(data = UK, aes(x=long, y = lat, group=group), colour="grey",alpha=0.1) +  
+  geom_label(data=coords, aes(x=lon, y=lat, label=coords$POP), size=3, hjust = 0,label.size =NA, fill=NA) + #scale_color_gradient(low = "red", high = "blue", name="Latitude", guide="none")+
   theme_void() + ylim(50,59) + xlim(NA,3) + coord_map() 
 
-#save the plots
-vp <- viewport(width = .4, height = .4,  x = 0.49, y = 0.72)
-print(p)
-print(p1, vp = vp)
+map_grob <- ggplotGrob(p1)
+pall <- pall + annotation_custom(grob=map_grob, xmin=-5.5, xmax=2, ymin=0, ymax=6.5)
+#read in Fsts and check outliers
+bayesFst <-  read.table("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/BayeScan/longrun_n50000_OD100_fst.txt", header = T)
+#filter 1% fdr
+outliers <- bayesFst[bayesFst$qval<0.01,]
+mat <- as.matrix(z)
+#use row ids of bayes outliers to select the columnss
+outliermat <- mat[,as.numeric(rownames(outliers))]
+#append marker information to bayescan outlier for sorting
+outliers$marker <- colnames(outliermat)
+
+zneut <- z[,!(z$loc.names %in% outliers$marker)]
+w1 <- tab(zneut, freq = TRUE, NA.method = "mean")
+
+#perform PCA
+w1.pca <- dudi.pca(w1, scannf = F, scale=F, nf=4)
+
+dudi.pca1 <- tibble(pc1=w1.pca$li[,1], pc2=w1.pca$li[,2], pc3=w1.pca$li[,3], pc4=w1.pca$li[,4],lat=z@other$latlong[,2], pop=pops)
+#PCA plot
+pc1per <- round(w1.pca$eig[1]/sum(w1.pca$eig) *100, 1)
+pc2per <- round(w1.pca$eig[2]/sum(w1.pca$eig) *100, 1)
+pc3per <- round(w1.pca$eig[3]/sum(w1.pca$eig) *100, 1)
+pc4per <- round(w1.pca$eig[4]/sum(w1.pca$eig) *100, 1)
+col <- funky(15)
+
+labels <- dudi.pca1 %>% distinct(pop, .keep_all=T)
+
+#current plot with pop colours at random
+p <- ggplot(dudi.pca1,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-7, 6), ylim=c(-6.5,6)) +
+  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=12),axis.title=element_text(size=14,face="bold"), 
+                                                                                             plot.margin = unit(c(1,1,1,1), "lines"))
+pneut <- p + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
+#pca with outlier loci
+zout <- z[,outliers$marker]
+w2 <- tab(zout, freq = TRUE, NA.method = "mean")
+
+#perform PCA
+w2.pca <- dudi.pca(w2, scannf = F, scale=F, nf=4)
+
+dudi.pca2 <- tibble(pc1=w2.pca$li[,1], pc2=w2.pca$li[,2], pc3=w2.pca$li[,3], pc4=w2.pca$li[,4],lat=z@other$latlong[,2], pop=pops)
+#PCA plot
+pc1per <- round(w2.pca$eig[1]/sum(w2.pca$eig) *100, 1)
+pc2per <- round(w2.pca$eig[2]/sum(w2.pca$eig) *100, 1)
+pc3per <- round(w2.pca$eig[3]/sum(w2.pca$eig) *100, 1)
+pc4per <- round(w2.pca$eig[4]/sum(w2.pca$eig) *100, 1)
+col <- funky(15)
+
+labels <- dudi.pca2 %>% distinct(pop, .keep_all=T)
+
+#current plot with pop colours at random
+p <- ggplot(dudi.pca2,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-3, 3), ylim=c(-3,3)) +
+  xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=12),axis.title=element_text(size=14,face="bold"), 
+                                                                                             plot.margin = unit(c(1,1,1,1), "lines"))
+pout <- p + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
+
+
+#plot frequencies of most common allele
+#drawing allele frequencies across lats, pops
+snps <- data.frame(POP=pop(z))
+snps <- cbind(snps, outliermat)
+
+#reorder pops in lat order
+snps$POP <- factor(snps$POP, c("FRN", "ETB", "BWD", "BMD", "PCP", "MMS", "CFW", "MDC", "RHD", "RVS", "OBN", "MLG", "DGC", "BER", "TUL"))
+
+allelefreqs <- data.frame(Pops=levels((snps$POP)))
+allelefreqs$Pops <- factor(allelefreqs$Pops, c("FRN", "ETB", "BWD", "BMD", "PCP", "MMS", "CFW", "MDC", "RHD", "RVS", "OBN", "MLG",  "BER",  "DGC","TUL"))
+for (i in 2:dim(snps)[2]){
+  #get table of allele frequencies
+
+  x<-xtabs(~snps[,i]+snps$POP)
+  #pick the most common allele
+  #if there are only two classeses
+  if (dim(x)[1]==3) { 
+    #most common allele
+    if (sum(x[,1])>sum(x[,3])){
+      mca_ind = 1
+      other_ind =3
+    }
+    else {mca_ind=3; other_ind=1 }
+    }
+  
+  
+  if (dim(x)[1]==2){
+    print( colnames(snps)[i])
+    freq <- (2*x[1,]+x[2,])/(2*(x[1,]+x[2,]))
+    allelefreqs$marker <- freq
+    names(allelefreqs)[i] <- names(snps)[i]
+  }
+  else {
+  #print( colnames(outliermat)[i])
+  freq <- (2*x[mca_ind,]+x[2,])/(2*(x[mca_ind,]+x[2,]+x[other_ind,]))
+  allelefreqs$marker <- freq
+  names(allelefreqs)[i] <- names(snps)[i]}
+}
+
+
+#plot all the outliers
+library(reshape2)
+d <- melt(allelefreqs, id.vars = "Pops")
+#filter France and other small pops
+d <- d %>% filter(Pops!="FRN" & Pops!="RVS" & Pops!="BWD")
+#clines
+#ggplot(d %>% filter(variable=="366257_57"), aes(x=Pops, y=value, group=variable)) + geom_line(alpha=0.2)
+#merge pops
+d$Region <- "South"
+d$Region[d$Pops=="BER" | d$Pops=="TUL" | d$Pops=="DGC" | d$Pops=="MLG" | d$Pops=="OBN"] <- "North"
+mca <- ggplot(d, aes(x=value, fill=Region)) + geom_density(alpha=0.6) + theme_bw()+  xlab("Frequency of Most Common Allele") + 
+  scale_fill_manual(values=c("black", "grey"))+
+    theme(legend.position =c(0.7,.7),panel.grid = element_blank(), 
+          axis.text=element_text(size=12),axis.title=element_text(size=13,face="bold"), 
+          legend.title = element_text( size = 14),
+          legend.text = element_text( size = 12),
+          legend.spacing.y = unit(-0.25, "mm"),
+          legend.key.size = unit(1,"line"),
+          plot.margin = unit(c(1,1,1,1), "lines"))
+
+ggarrange(pall,pneut, pout, mca, labels = c("A", "B", "C", "D"), ncol=2, nrow=2,font.label = list(size = 20, color = "black", face = "bold", family = NULL))
+
+
 ```
 
-**Figure 3** Principal component analysis based on 2824 unlinked SNPs and 148 individuals. PC1 explains 6.8% of the variation in genomic SNPs and PC2 explains 1.7%. Ninety-% Confidence Interval (CI) ellipses for PC1 and 2 for each locality are also shown. Each locality is represented by a distinct colour and inset shows a labelled map of the sampled localities for quick reference.
+**Figure 3** Population structure based on principal component analysis (PCA) of 5592 SNPs (2824 RAD loci) of 148 *Polyomattus icarus* individuals across the British Isles. PCAs are shown for the entire dataset **(A)**, a subset of 5479 putatively neutral SNPS **(B)**, and a subset of 113 outlier loci **(C)**. Ninety-% Confidence Interval (CI) ellipses for PC1 and PC2 for each locality are also shown. Each locality is represented by a distinct colour and map inset in **(A)** shows a labelled map of the sampled localities for quick reference. **(D)** Density distributions of the frequency of the most common allele (mca) for the 113 outlier loci across northern and southern British Isles. Indvidual Sampling locations are aggregated by North-South division in **(C)** and localities with less than 7 individuals were excluded (BWD, RVS, FRN). North: TUL, BER, DGC, MLG, OBN; South: MDC, CFW, MMS, PCP, BMD, ETB.
+
 
 ```{r Fig4, warning=FALSE, echo=F, fig.width=5,fig.height=8, message=F, results=F, fig.align="center"}
 #load additional packages required
 library(gridExtra)
-library(ggpubr)
+
 
 setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts")
 
@@ -342,7 +526,7 @@ UK2 <- ne_countries(scale = "medium", returnclass = "sf", country="united kingdo
 
 
 p3 <- ggplot(data = UK2) +
-  geom_sf(alpha=0.1, colour="gray") + theme_void() +  coord_sf( xlim=c(-8,.7),ylim = c(54.5, 59), expand = TRUE) +
+  geom_sf(alpha=0.1, colour="gray") + theme_void() +  coord_sf( xlim=c(-8,.6),ylim = c(54.5, 59), expand = TRUE) +
   geom_label(data=infection, aes(x=lon, y=lat, label=POP), size=2.2, hjust = 0, label.size = NA, fill=NA, face="bold") +
   theme(plot.background = element_rect( colour = "black", size=1))
 
@@ -372,7 +556,7 @@ p2 <- ggplot(north, aes(y=percentage_classified_wolcbachia, x=POP, group=Sex, co
       guides(colour=FALSE) + scale_y_continuous(breaks=c(0,10,20,30,40,50))+scale_fill_manual(values=c("black", "grey80"))+
       theme(legend.position=c(0.85,0.25),axis.text=element_text(size=10),axis.title=element_text(size=12,face="bold"), 
             plot.margin = unit(c(1,1,1,1), "lines"),
-            legend.title = element_text( size = 11),
+            legend.title = element_text( size = 11, hjust = 0.25),
             #legend.text = element_text( size = 9),
             legend.spacing.y = unit(-0.5, "mm"),
             legend.key.size = unit(2,"line"),
