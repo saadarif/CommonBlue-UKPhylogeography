@@ -1,0 +1,51 @@
+#!/bin/bash
+
+#29/07/2020 SA
+#Outlier loci are loci identifed by Bayescan (fdr 1%) and Outflank (default right trim)
+#This is done in RScripts/BayeScan.R
+
+#First extract all the loci for blasting mapping
+
+#prep the file
+sed -e 's/^/_/' ../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/BayeScan/p15r50miss25/outlier_locus > /media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/BayeScan/p15r50miss25/outlier_search
+sed -i -e  's/$/\$/' ..//stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/BayeScan/p15r50miss25/outlier_search
+
+grep -A 1 -f ../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/BayeScan/p15r50miss25/outlier_search \
+	     ../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.loci.fa > ../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/BayeScan/p15r50miss25/outlier_loci.fa
+
+#remove the extraneous "--"
+sed -i '/--/d' ../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/BayeScan/p15r50miss25/outlier_loci.fa
+
+#now remove all the outlier loci from the relevant file
+
+#make a copy of the VCF file so set as both in and out vcf
+cp  ../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf \
+  ../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.neutral.vcf
+VCF=../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.neutral.vcf
+vcf_dir=../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65
+#index for naming files
+i=1
+#this is a bit clumsy as vcftools can only hanlde one "chromosome at a time"
+while read loci; do
+	vcftools --vcf $VCF --not-chr $loci --recode  \
+	--out $vcf_dir/populations.snps.filter2.0.25.recode.neutral.$i
+	VCF=../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.neutral.$i.recode.vcf
+	i=$(($i+1))
+done <../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/BayeScan/p15r50miss25/outlier_locus
+#clean up the mess
+i=$(($i-1))
+mv ../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.neutral.$i.recode.vcf \
+   ../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.neutral.vcf
+
+rm $vcf_dir/*neutral.*.recode*
+rm $vcf_dir/*neutral.*.log
+
+
+#also make a file that retains the neutral loci
+#the header line here will be lost
+sed  -i -e 's/_/\^/' ../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/BayeScan/p15r50miss25/outlier_locus
+sed -i  -e 's/\$//'  ../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/BayeScan/p15r50miss25/outlier_locus
+
+#have to manually add terms to outlier_locus (^#, ^#CHROM)for headers or vcftools etc. will complain
+
+grep -w -f  ../stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/BayeScan/p15r50miss25/outlier_locus

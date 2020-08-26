@@ -1,4 +1,4 @@
-#Bayescan
+#Bayescan, PCADAPT, OutFlank outliers
 #April 2020
 
 library("adegenet")
@@ -14,8 +14,9 @@ library(tidyverse)
 library(ggrepel)
 library(dartR)
 library(grid)
+library(OutFLANK)
 #Descend into appropriate directory
-setwd('/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new//populations.r50.p15_moh_0.65/BayeScan/')
+setwd('/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new//populations.r50.p15_moh_0.65/BayeScan/p15r50miss25/')
 
 #checking for convergence
 chain1 <- read.table("longrun_n50000_OD100.sel", header = T)
@@ -37,9 +38,13 @@ gelman.plot(chain1)
 
 #read in Fsts and check outliers
 bayesFst <-  read.table("longrun_n50000_OD100_fst.txt", header = T)
+source("/opt/BayeScan2.1/R functions/plot_R.r")
+plot_bayescan(bayesFst)
 #filter 1% fdr
 outliers <- bayesFst[bayesFst$qval<0.01,]
 #check if outliers are same as PCA outliers
+
+
 
 MLG=c(-5.834874, 56.991962)# check field notes 16
 MDC=c(-3.843251, 53.295675) #12
@@ -63,7 +68,7 @@ colnames(coords) <- c("lon", "lat")
 
 
 
-VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf")
+VCF <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.outlier.vcf")
 z <- vcfR2genlight(VCF)
 popnames <- z@ind.names
 pops <- as.factor(sapply(strsplit(popnames, '_'), function(x){paste0(x[1])}))
@@ -137,30 +142,89 @@ print(p1, vp = vp)
 #)
 
 
+
+
 #get genotypes in usable formate quick
 mat <- as.matrix(z)
-#use row ids of bayes outliers to select the columnss
+dim(mat)#use row ids of bayes outliers to select the columnss
 outliermat <- mat[,as.numeric(rownames(outliers))]
 #append marker information to bayescan outlier for sorting
 outliers$marker <- colnames(outliermat)
 outliers[order(outliers$fst),]
 #
-xtabs(~mat[,c("5777_18")]+pop(z))
+xtabs(~mat[,c("6023_37")]+pop(z))
 
+#outlier detetction using PCAdapt
+#library(pcadapt)
+#filename <- read.pcadapt("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.vcf", type="vcf")
+#x <- pcadapt(filename, K=10)
+#plot(x, option = "screeplot")
+#x <- pcadapt(filename, K=2)
+#summary(x)
+#plot(x, option = "scores", i=1,j=3, pop = pops)
+##outlier detection using q-values
+#library(qvalue)
+#qval <- qvalue(x$pvalues)$qvalues
+#alpha=0.05
+#outliersPCadapt <- which(qval < alpha)
+
+#outlierPCad <- colnames(mat)[outliersPCadapt]
+
+#outliers using outFLANK
+#make a snpwise fst matirx
+#code missing data as 9
+mat[is.na(mat)] <- 9
+my_fst <- MakeDiploidFSTMat(mat, locusNames = colnames(mat), popNames = pop(z))
+
+#run outflank
+OF_res<- OutFLANK(my_fst, NumberOfSamples = 15)
+#plot
+OutFLANKResultsPlotter(OF_res,withOutliers = F, Zoom=T)
+length(OF_res$results$LocusName[OF_res$results$OutlierFlag==T])
+#right right trim
+OF_res2<- OutFLANK(my_fst, RightTrimFraction = 0.1, NumberOfSamples = 15)
+length(OF_res2$results$LocusName[OF_res2$results$OutlierFlag==T])
+OF2_out <- as.character(OF_res2$results$LocusName[OF_res2$results$OutlierFlag==T])
+#check right tail pvals, should be flat but for a bump on selected sites
+hist(OF_res2$results$pvaluesRightTail)
+
+#intersection between pcadapt and bayescan, outlfank
+allU <- intersect(outliers$marker,as.character(OF_res$results$LocusName[OF_res$results$OutlierFlag==T]))
+#all unique markers in both
+all <- unique(c(outliers$marker, as.character(OF_res$results$LocusName[OF_res$results$OutlierFlag==T])))
+
+#write out the outliers locui to remove from file
+
+out_write <- str_split(all, "_", simplify = T)[,1]
+#retain only unique loci
+out_write <- unique(out_write)
+write.table(out_write, "outlier_locus", quote=F, row.names=F, col.names = F)
 
 #drawing allele frequencies across lats, pops
 snps <- data.frame(POP=pop(z))
-snps <- cbind(snps, outliermat)
+snps <- cbind(snps, mat[,OF2_out])
 
 #reorder pops in lat order
 snps$POP <- factor(snps$POP, c("FRN", "ETB", "BWD", "BMD", "PCP", "MMS", "CFW", "MDC", "RHD", "RVS", "OBN", "MLG", "DGC", "BER", "TUL"))
 
 allelefreqs <- data.frame(Pops=levels((snps$POP)))
-allelefreqs$Pops <- factor(allelefreqs$Pops, c("FRN", "ETB", "BWD", "BMD", "PCP", "MMS", "CFW", "MDC", "RHD", "RVS", "OBN", "MLG", "DGC", "BER", "TUL"))
+allelefreqs$Pops <- factor(allelefreqs$Pops, c("FRN", "ETB", "BWD", "BMD", "PCP", "MMS", "CFW", "MDC", "RHD", "RVS", "OBN", "MLG",  "BER",  "DGC","TUL"))
 for (i in 2:dim(snps)[2]){
   #get table of allele frequencies
 
   x<-xtabs(~snps[,i]+snps$POP)
+  #pick the most common allele
+  #if there are only two classeses
+  if (dim(x)[1]==3) { 
+    #most common allele
+    if (sum(x[1,])>sum(x[3,])){
+      mca_ind = 1
+      other_ind =3
+    }
+    else {mca_ind=3; other_ind=1 }
+    }
+  
+  
   if (dim(x)[1]==2){
     print( colnames(snps)[i])
     freq <- (2*x[1,]+x[2,])/(2*(x[1,]+x[2,]))
@@ -169,7 +233,7 @@ for (i in 2:dim(snps)[2]){
   }
   else {
   #print( colnames(outliermat)[i])
-  freq <- (2*x[1,]+x[2,])/(2*(x[1,]+x[2,]+x[3,]))
+  freq <- (2*x[mca_ind,]+x[2,])/(2*(x[mca_ind,]+x[2,]+x[other_ind,]))
   allelefreqs$marker <- freq
   names(allelefreqs)[i] <- names(snps)[i]}
 }
@@ -178,13 +242,63 @@ for (i in 2:dim(snps)[2]){
 #plot all the outliers
 library(reshape2)
 d <- melt(allelefreqs, id.vars = "Pops")
-ggplot(d, aes(x=Pops, y=value, group= variable)) + geom_line(alpha=0.2)
+#filter France and other small pops
+#d <- d %>% filter(Pops!="FRN" & Pops!="RVS" & Pops!="BWD")
+#clines
+ggplot(d , aes(x=Pops, y=value, group=variable)) + geom_line(alpha=0.2)
+#merge pops
+d$region <- "South"
+d$region[d$Pops=="BER" | d$Pops=="TUL" | d$Pops=="DGC" | d$Pops=="MLG" | d$Pops=="OBN" |  d$Pops=="RHD"] <- "North"
+d %>% group_by(region, variable) %>% summarise(mean=mean(value)) %>% 
+ggplot(aes(x=mean, fill=region)) + geom_density(alpha=0.2) #+ geom_histogram()
+plot(d$value[d$region=="North"], d$value[d$region=="South"])
 
+#---------------------------------
+
+#hierarchical cluster of outlier alleles across pops
+#get martix
+hclust_matrix <- allelefreqs %>% select(-Pops) %>% as.matrix() 
+#assignrownames
+rownames(hclust_matrix) <- allelefreqs$Pops 
+#no need to scale calculate dist
+locus_dist <- dist(t(hclust_matrix))
+#cluster
+locus_hclust <- hclust(locus_dist, method="complete")
+
+plot(locus_hclust, labels=F)
+
+#cut the groups
+locus_cluster <- cutree(locus_hclust, k=3) %>% enframe() %>% rename(SNP= name, cluster=value)#
+
+#join cluser membership
+d <- d %>% rename(SNP=variable)
+dclust <- d %>% inner_join(locus_cluster, by = "SNP")
+
+dclust %>% ggplot(aes(Pops, value)) + geom_line(aes(group=SNP), alpha=0.5) + 
+  geom_line(stat="summary", fun.y="mean", colour="Red", size=2, aes(group=1)) +
+  facet_grid(cols=vars(cluster))
 #-------------------------------------------------------------------------------------------------------------------
 #PCA of neutral vs outlier
 
-#try doing pca after removing outlier loci
-zneut <- z[,!(z$loc.names %in% outliers$marker)]
+#Use the saved VCF file for this as all neutral rad loci have been remoced from those files
+VCFn <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.neutral.vcf")
+zneut <- vcfR2genlight(VCFn)
+popnames <- zneut@ind.names
+pops <- as.factor(sapply(strsplit(popnames, '_'), function(x){paste0(x[1])}))
+pops<- str_replace_all(pops, "RNL", "CFW")
+pop(zneut) = pops
+ploidy(zneut) <- 2
+#add lat long to gen light object
+zneut@other$latlong <- latlong[,2:3]
+#should now be able to use the dartR IBD function
+#add sex information as well
+popnames <- zneut@ind.names 
+sex<- as.factor(sapply(strsplit(popnames, '_'), function(x){paste0(x[2])}))
+ind <- cbind( zneut@ind.names, pops, sex, latlong[,2:3])
+colnames(ind)[1] <- "ind"
+zneut@other$ind.metrics <- ind
+
+#Do the pca
 w1 <- tab(zneut, freq = TRUE, NA.method = "mean")
 
 #perform PCA
@@ -208,18 +322,33 @@ pneut <- p + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
 
 
 
-#fviz_pca_var(w.pca,
-#             col.var = "contrib", # Color by contributions to the PC
- #            gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
- #            repel = TRUE ,    # Avoid text overlapping
- #            select.var = list(name = NULL, cos2 = 20, contrib = NULL),
- #            col.circle = "grey70"
-#)
+fviz_pca_var(w1.pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE ,    # Avoid text overlapping
+             select.var = list(name = NULL, cos2 = 20, contrib = NULL),
+             col.circle = "grey70"
+)
 
 
 #FST plot for neutral loci
 #pca with outlier loci
-zout <- z[,outliers$marker]
+VCFo <- read.vcfR("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/populations.snps.filter2.0.25.recode.outlier.vcf")
+zout <- vcfR2genlight(VCFo)
+popnames <- zout@ind.names
+pops <- as.factor(sapply(strsplit(popnames, '_'), function(x){paste0(x[1])}))
+pops<- str_replace_all(pops, "RNL", "CFW")
+pop(zout) = pops
+ploidy(zout) <- 2
+#add lat long to gen light object
+zout@other$latlong <- latlong[,2:3]
+#should now be able to use the dartR IBD function
+#add sex information as well
+popnames <- zout@ind.names 
+sex<- as.factor(sapply(strsplit(popnames, '_'), function(x){paste0(x[2])}))
+ind <- cbind( zout@ind.names, pops, sex, latlong[,2:3])
+colnames(ind)[1] <- "ind"
+zout@other$ind.metrics <- ind
 w2 <- tab(zout, freq = TRUE, NA.method = "mean")
 
 #perform PCA
@@ -236,10 +365,18 @@ col <- funky(15)
 labels <- dudi.pca2 %>% distinct(pop, .keep_all=T)
 
 #current plot with pop colours at random
-p <- ggplot(dudi.pca2,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-3, 3), ylim=c(-3,3)) +
+p <- ggplot(dudi.pca2,aes(x=pc1, y=pc2, colour=pop, group=pop)) + geom_point() +stat_ellipse(level=0.9) + scale_color_manual(name="Pop",values=col) + coord_fixed(xlim=c(-4, 4), ylim=c(-4,4)) +
   xlab(paste0("PC1 ", pc1per, "%")) + ylab(paste0("PC2 ", pc2per, "%")) + theme_bw() + theme(legend.position = "none",panel.grid = element_blank(), axis.text=element_text(size=12),axis.title=element_text(size=14,face="bold"), 
                                                                                              plot.margin = unit(c(1,1,1,1), "lines"))
 pout <- p + geom_label_repel(data=labels, aes(x=pc1, y=pc2, label=pop), size=3)
+
+fviz_pca_var(w2.pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE ,    # Avoid text overlapping
+             select.var = list(name = NULL, cos2 = 20, contrib = NULL),
+             col.circle = "grey70"
+)
 
 
 #--------------------------------------------------------------------------------------------------------------------
@@ -354,7 +491,7 @@ outlierFST <- ggheatmap +
 
 #------------------------------------------------------------------------------------------------------------
 #IBD for neutral and outlier loci
-ibdneut <- gl.ibd(zneut, permutations=9999, plot = F)
+ibdneut <- gl.ibd(zneut, permutations=999, plot = T)
 
 #reshape the dist matrices 
 library(reshape2)
@@ -406,7 +543,7 @@ points(ibneutdf$dgeo[ grepl("TUL", ibneutdf$comp) & grepl("BER", ibneutdf$comp)]
 
 
 #----
-ibdout <- gl.ibd(zout, permutations=9999, plot=F)
+ibdout <- gl.ibd(zout, permutations=2, plot=T)
 
 #reshape the dist matrices 
 df <- melt(as.matrix(ibdout$Dgen), varnames = c("pop1", "pop2"))
@@ -447,6 +584,24 @@ ibdplots <- ggplot(ibd, aes(x=dgeo, y=dgen, group=data, shape=region, colour=dat
 ggarrange(pall,pneut, pout, ibdplots, labels = c("A", "B", "C", "D"), ncol=2, nrow=2,font.label = list(size = 20, color = "black", face = "bold", family = NULL)) %>% 
   ggexport(filename="test.pdf", height =12, width=16)
 
+outlierfst <- ibd%>% filter(data=="neutral")
 
 
-#
+ggplot(outlierfst, aes(x=dgeo, y=dgen,  shape=region)) + theme_bw() +
+  xlab("Log Distance")+ ylab(expression("F"[st]*"/"*"(1-F"[st]*")"))+ ylim(c(-.01,.15)) +
+  labs( shape="Regional Comparison")+ scale_shape_manual(values=c(15,16,17))+
+  theme(legend.position=c(0.2,0.75),axis.text=element_text(size=12),axis.title=element_text(size=14,face="bold"), 
+        plot.margin = unit(c(1,1,1,1), "lines"),
+        legend.title = element_text( size = 10),
+        #legend.text = element_text( size = 9),
+        #legend.spacing.y = unit(-0.5, "mm"),
+        #legend.key.size = unit(2,"line"),
+        #legend.text = element_text(margin = margin(r = 8, unit = "pt")),
+        #legend.box.background = element_rect(colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) + geom_density_2d(na.rm=T, size=0.25) + #stat_density_2d(geom="polygon", aes(fill= ..level..)) +
+        geom_point(size=3, alpha=0.6, colour="black")  +
+        geom_smooth(method="lm", aes(group=1), se=F, colour="black", na.rm=T, size=1)
+
+
+#"4155_29"   "4155_42"   "19539_66"  "20988_40"  "21281_19"  "34704_16"  "363255_87"

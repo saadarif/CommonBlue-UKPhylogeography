@@ -2,7 +2,7 @@
 
 #convert a filtered vcf to pylip and run raxml for groups, use cvf with single snps
 system("ln -s ../populations.snps.filter2.0.25.recode.vcf .")
-setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/Wolbachia/stacks_m4_M4_n4/populations.r50.p3/")
+setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/raxml/p15r50miss25neutral/")
 #convert vcf to phylip
 system("python /opt/vcf2phylip/vcf2phylip.py -i  populations.snps.filter2.0.25.recode.vcf -n ")
 #move files to current director
@@ -10,12 +10,12 @@ system("python /opt/vcf2phylip/vcf2phylip.py -i  populations.snps.filter2.0.25.r
 
 #filter invariant sites and save as phylip for raxml
 library("phrynomics")
-snps <- ReadSNP("populations.snps.filter2.0.5.recode.min4.nexus")
+snps <- ReadSNP("populations.snps.filter2.0.25.recode.neutral.min4.nexus")
 # Remove Invariant/nonbinary sites or loci/sites with too much missing data
 snps_i <- RemoveInvariantSites(snps)
 snps_b <- RemoveNonBinary(snps_i)
 #write out phylipc for RAXML
-WriteSNP(snps_b, file="populations.snps.filter2.0.5.recode.min4_BInoIinv.phy", format="phylip")
+WriteSNP(snps_b, file="populations.snps.filter2.0.25.recode.min4_BInoIinv.phy", format="phylip")
 
 #run raxml
 system("mkdir -p raxml_out")
@@ -27,7 +27,7 @@ system("raxmlHPC-PTHREADS-AVX -f a -T 10 -m ASC_GTRCAT -V --asc-corr=lewis -N au
 #--outgroup FRN_m_M05,FRN_f_M02,FRN_m_M03,FRN_f_M04,FRN_m_M06,FRN_m_M07
 system("raxml-ng --parse --msa populations.snps.filter2.0.25.recode.singlesnp_min4_noIinv.phy --model GTR+ASC_LEWIS --prefix T2")
 #2infer trees --outgroup FRN_m_M05,FRN_f_M02,FRN_m_M03,FRN_f_M04,FRN_m_M06,FRN_m_M07
-system("raxml-ng --msa populations.snps.filter2.0.25.recode.singlesnp_min4_noIinv.phy --model GTR+ASC_LEWIS  --prefix T4 --threads 2 --seed 2 --tree pars{25},rand{25}")
+system("raxml-ng --msa populations.snps.filter2.0.25.recode.neutral.min4.phy --model GTR+G+ASC_LEWIS  --prefix withInv --threads 8 --seed 2 --tree pars{25},rand{25}")
 #3check differences in topology
 system("raxml-ng --rfdist --tree T4.raxml.mlTrees --prefix RF")
 #4bootstrapping

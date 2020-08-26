@@ -28,7 +28,7 @@ boldd <- read.csv("/media/data_disk/PROJECTS/Saad/CommonBlue/scripts/FigScripts/
 boldd <- boldd[,c(1:5)]
 #change names
 names(boldd) <- c("BOLD Process ID", "Field ID", "Country", "Province/State", "Region")
-kable(boldd, "latex", longtable=T, caption = "Title") %>% row_spec(0, bold=T) %>%
+kable(boldd, "latex", longtable=T, caption = "Samples used for CO1 Phylogenetic Reconstruction") %>% row_spec(0, bold=T) %>%
 kable_styling(font_size = 7, full_width = F, latex_options = "repeat_header") %>% kableExtra::landscape()
 
 ```

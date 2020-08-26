@@ -162,8 +162,8 @@ pp + annotate("text", 0.38,28, hjust=0, size=6, label=expression(atop(italic("Wo
   annotate("text", x=0.23, y=23, angle=270, size =4, label="Alicante")+
   annotate("segment", x = 0.29, xend = 0.29, y = 21, yend = 42, colour="black", size=2, alpha=0.5) +
   annotate("segment", x = 0.29, xend = 0.29, y = 1, yend = 20, colour="black", size=2, alpha=0.5) +
-  annotate("text", x=0.28, y=30, angle=90, size =4, label=expression(italic("w")*"Ica2"))+
-  annotate("text", x=0.28, y=10, angle=90, size =4, label=expression(italic("w")*"Ica1"))+ 
+  annotate("text", x=0.28, y=30, angle=90, size =4, label=expression(italic("w")*"Ica1"))+
+  annotate("text", x=0.28, y=10, angle=90, size =4, label=expression(italic("w")*"Ica2"))+ 
   geom_treescale(x=0.45, y=36, fontsize=5) 
 dev.off()
 

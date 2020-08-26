@@ -5,7 +5,7 @@ library("ape")
 
 setwd("/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new/populations.r50.p15_moh_0.65/raxml/")
 
-bsTree <-read.newick("T6.raxml.support", node.label='support')
+bsTree <-read.newick("p15r50miss25neutral/", node.label='support')
 
 
 #get pop names

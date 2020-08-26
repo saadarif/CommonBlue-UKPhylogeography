@@ -113,9 +113,9 @@ marker_results[marker_results$aic<10,]
 
 
 #see stats for marker
-grab=which(VCF@fix[,1] == "213425")
+grab=which(VCF@fix[,1] == "9544")
 #extract info
-gt<- sapply(strsplit(VCF@gt[grab[2],2:length(VCF@gt[grab[2],])], ':'), function(x){paste0(x[1])})
+gt<- sapply(strsplit(VCF@gt[grab[1],2:length(VCF@gt[grab[1],])], ':'), function(x){paste0(x[1])})
 gt[gt=="./."] <- NA
 dp <- as.numeric(sapply(strsplit(VCF@gt[grab[1],2:length(VCF@gt[grab[1],])], ':'), function(x){paste0(x[2])}))
 ad <- (sapply(strsplit(VCF@gt[grab[1],2:length(VCF@gt[grab[1],])], ':'), function(x){paste0(x[3])}))

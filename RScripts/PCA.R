@@ -15,7 +15,7 @@ library("ggplot2")
 library(tidyverse)
 
 #Descend into appropriate directory
-setwd('/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m4_M4_n4_new//populations.r50.p15_moh_0.65/')
+setwd('/media/data_disk/PROJECTS/Saad/CommonBlue/stacks.denovo/stacks_m5_M4_n4_new//populations.r50.p15_moh_0.65/')
 
 # Load the genotypes.
 #x = read.genepop('./populations.r50.p15_moh_0.65/populations.snps.gen')
@@ -230,9 +230,19 @@ pop(geni) <-  pops
 #Testing for sex bias
 #covnert genind to hierfstat data frame
 hf<-genind2hierfstat(geni,pop=pop(geni))
-sextest<-sexbias.test(hf, z@other$ind.metrics$sex, test="mAIc", nperm=100)
-aic<-AIc(hf)
-boxplot(aic ~ z@other$ind.metrics$sex)
+sextestVaic<-sexbias.test(hf, z@other$ind.metrics$sex, test="vAIc", nperm=9999)
+sextestMaic<-sexbias.test(hf, z@other$ind.metrics$sex, test="mAIc", nperm=9999)
+sextestFst<-sexbias.test(hf, z@other$ind.metrics$sex, test="FST", nperm=9999)
+
+#change pops beteeen north and south
+#remove frn next time
+hf$pop <- ifelse(hf$pop %in% c("BER", "TUL", "DGC", "MLG", "OBN", "RVS"), "North", "South")
+sextestVaic<-sexbias.test(hf, z@other$ind.metrics$sex, test="vAIc", nperm=9999)
+sextestMaic<-sexbias.test(hf, z@other$ind.metrics$sex, test="mAIc", nperm=9999)
+sextestFst<-sexbias.test(hf, z@other$ind.metrics$sex, test="FST", nperm=999)
+
+sexaic<-AIc(hf)
+boxplot(sexaic ~ z@other$ind.metrics$sex)
 boxplot(aic[which((hf$pop != "TUL") & (hf$pop != "BER"))] ~  z@other$ind.metrics$sex[which((hf$pop != "TUL") & (hf$pop != "BER"))])
 var.test(aic ~ z@other$ind.metrics$sex, 
          alternative = "two.sided")

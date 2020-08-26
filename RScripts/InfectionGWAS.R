@@ -43,7 +43,7 @@ names(wol)[1] <- "Sample"
 infectionP <- inner_join(wol, dudi.pca, by="Sample")
 
 #keep only pops in the north
-infectionP <- infectionP %>% filter(POP %in% c("BER", "TUL", "DGC", "MLG", "OBN", "RVS", "RHD"))
+#infectionP <- infectionP %>% filter(POP %in% c("BER", "TUL", "DGC", "MLG", "OBN", "RVS", "RHD"))
 
 #get snp MAT
 mat <- as.matrix(z)
